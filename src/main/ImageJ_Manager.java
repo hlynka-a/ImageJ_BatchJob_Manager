@@ -23,7 +23,7 @@ public class ImageJ_Manager {
 
 	public static void main (String[] args) {
 		
-		String version = "v0.701 | 2021-04-06";
+		String version = "v0.711 | 2021-04-06";
 		
 		/*UtilClass util = new UtilClass();
 		double[] inputAvg = {4.5, 6, 7.1};
@@ -378,6 +378,7 @@ public class ImageJ_Manager {
 		thisManager.task02images = Integer.parseInt(task02images.replace("|", ""));
 		thisManager.task02imagesDir = Integer.parseInt(task02imagesDir.replace("|", ""));
 		
+		
 		if (functionMode.contains("1") == true) {
 			thisManager.Initialize_Start();
 		}
@@ -406,7 +407,7 @@ public class ImageJ_Manager {
 		System.out.println("VERSION: " + version);
 		System.out.println("---");
 		System.out.println("Parameters:");
-		System.out.println("\t--help \t\t\t: List out documentation / parameter options.");
+		/*System.out.println("\t--help \t\t\t: List out documentation / parameter options.");
 		System.out.println("\t--paramFile \t\t: Use input .txt file (with full file path or local path) as parameter input."); 
 		System.out.println("\t\t\t\tThis input is overrided by any parameters defined in command line alongside --file definition.");
 		System.out.println("\t--printParamFile\t: Do not run program, but print out example input .txt file in same directory as this .jar for use.");
@@ -429,7 +430,33 @@ public class ImageJ_Manager {
 		System.out.println("\t\t\t\t1 = Run ImageJ job(s) to analyze data (parallel),");
 		System.out.println("\t\t\t\t2 = Run initial job(s) to prepare data (not parallel),");
 		System.out.println("\t\t\t\t3 = Combine and summarize .csv output files,");
-		System.out.println("\t\t\t\t4 = function 2, then 1, 5 = function 1, then 3, 6 = function 2, then 1, then 3.");
+		System.out.println("\t\t\t\t4 = function 2, then 1, 5 = function 1, then 3, 6 = function 2, then 1, then 3.");*/
+		System.out.println("\t--help \t\t\t: List out documentation / parameter options.");
+		System.out.println("\t--paramFile \t\t: Use input .txt file (with full file path or local path) as parameter input."); 
+		System.out.println("\t\t\t\tThis input is overrided by any parameters defined in command line alongside --file definition.");
+		System.out.println("\t--printParamFile\t: Do not run program, but print out example input .txt file in same directory as this .jar for use.");
+		System.out.println("\t--printParam\t\t: Print / display parameter values used for this execution.");
+		System.out.println("\t--gui \t\t\t: Open with built-in Java Swing GUI (NOT IMPLEMENTED YET). True by default.");
+		System.out.println("\t--functionMode \t\t: Defines which function (or combination of functions) to run.");
+		System.out.println("\t\t\t\t1 = Run ImageJ job(s) to analyze data (parallel),");
+		System.out.println("\t\t\t\t2 = Run initial job(s) to prepare data (not parallel),");
+		System.out.println("\t\t\t\t3 = Combine and summarize .csv output files,");
+		System.out.println("\t\t\t\t123 = Example that runs 1, then 2, then 3.");
+		System.out.println("");
+		System.out.println("\t--task01cmd\t: The explicit command to run one instance of the program through the command line.");
+		System.out.println("\t\t\t\tIncludes special notation (||1||, ||2||, etc.) to set variables that can be defined.");
+		System.out.println("\t--task01timeout\t\t: Number (integer, >= 0) in milliseconds (1000 = 1 second) that defines how long to wait before forcing a program thread to close.");
+		System.out.println("\t--task01maxThreads \t\t: Number (integer, >= 1) that defines how many parallel threads to run at a time.");
+		System.out.println("\t--task01retryFails \t\t: Number (integer, >= 0). If program instance from batch jobs fails (based on 'timeout' value), launch again 'n' number of times.");
+		System.out.println("\t--task01input01\t: The corresponding value(s) as defined by ||1|| in task01cmd.");
+		System.out.println("\t\t\t\tRepeats for task01input01, 02, 03, ..., 09");
+		System.out.println("\t\t\t\tFor explicitly defining multiple images, use ',' to separate within one input. Example: 'image01,image02,image03' ");
+		System.out.println("\t--task01images\t: Which of task01input0X corresponds to file names of input images? (Example: ||2||)");
+		System.out.println("\t\t\t\tIf blank, assumes all image files in 'task01imagesDir' are the input.");
+		System.out.println("\t--task01imagesDir\t: Which of task01input0X corresponds to file directory of input images? (Example: ||2||)");
+		System.out.println("");
+		System.out.println("\tAll parameters that start with 'task01' exist for 'task02' as well.");
+		
 		System.out.println("---");
 		System.out.println("Examples:");
 		System.out.println("\t(run with default internal parameters)");
@@ -465,7 +492,7 @@ public class ImageJ_Manager {
 			System.out.println("ERROR: Input parameter " + removeString + " recognized, but issue parsing out value.");
 			e.printStackTrace();
 		}
-		//System.out.println(">>>> read parameter -> " + removeString + " = " + returnValue);
+		System.out.println(">>>> read parameter -> " + removeString + " = " + returnValue);
 		return returnValue;
 	}
 	
