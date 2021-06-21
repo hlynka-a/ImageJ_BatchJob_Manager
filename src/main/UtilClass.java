@@ -1,23 +1,41 @@
 package main;
 
+import java.awt.Color;
+
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+
 public class UtilClass {
 
 	
-	public double returnAverage(double[] num) {
-		// Follow "avg" logic as considered standard (refer to Microsoft Excel implementation)
-		
-		double returnValue = 0;
-		
-		if (num == null || num.length == 0) {
-			
-		} else {
-			double sum = 0;
-			for (int i = 0; i < num.length; i++) {
-				sum += num[i];
-			}
-			returnValue = sum / num.length;
+	public static JTextArea jtextarea_debug;
+	public static JLabel jlabel_status;
+	public static JPanel jpanel_status;
+	public static boolean gui = false;
+	public static String version = "v0.91 | 2021-05-21";
+	
+	public static void DebugOutput(String message) {
+		System.out.println(message);
+    	
+		if (gui == true && jtextarea_debug != null) {
+			jtextarea_debug.setText(jtextarea_debug.getText() + "\n" + message);
 		}
-		
-		return returnValue;
 	}
+	
+	public static void DebugOutputNoLine(String message) {
+		System.out.print(message);
+    	
+		if (gui == true && jtextarea_debug != null) {
+			jtextarea_debug.setText(jtextarea_debug.getText() + message);
+		}
+	}
+	
+	public static void StatusOutput(String message, Color newC) {
+		if (gui == true && jlabel_status != null) {
+			jlabel_status.setText(message);
+			jpanel_status.setBackground(newC);
+		}
+	}
+	
 }

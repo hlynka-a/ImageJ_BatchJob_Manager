@@ -23,7 +23,7 @@ public class ImageJ_Manager {
 
 	public static void main (String[] args) {
 		
-		String version = "v0.721 | 2021-04-06";
+		//String version = "v0.751 | 2021-04-27";
 		
 		/*UtilClass util = new UtilClass();
 		double[] inputAvg = {4.5, 6, 7.1};
@@ -33,6 +33,7 @@ public class ImageJ_Manager {
 		// input parameters the user can define, to be passed to instance of program
 		String paramFile = null;	//filepath
 		boolean gui = true;
+		boolean printParam = false;
 		String functionMode = "1";		// example: 12	=> task 1 and task 2, in this order
 		//int maxThreads = 4;
 		//int timeout = 60000;
@@ -83,7 +84,7 @@ public class ImageJ_Manager {
 			for (int i = 0; i < args.length; i++) {
 				if (args[i].toLowerCase().contains("--help") == true) {
 					// UPDATE: Generalized into assuming 3 different jobs, with better support for how variable arguements will be handled.
-					thisManager.PrintHelpDocs(version);
+					thisManager.PrintHelpDocs(UtilClass.version);
 					return;
 				}
 			}
@@ -171,7 +172,7 @@ public class ImageJ_Manager {
 						}
 						readFile.close();
 					} catch (Exception e) {
-						System.out.println("ERROR: Input parameter '--paramFile' recognized, but issue parsing out value.");
+						UtilClass.DebugOutput("ERROR: Input parameter '--paramFile' recognized, but issue parsing out value.");
 						e.printStackTrace();
 						return;
 					}
@@ -246,6 +247,33 @@ public class ImageJ_Manager {
 					task02images = thisManager.ImageJ_ReadParameter("--task02images=",args[i],0);
 				} 
 			}
+
+			for (int i = 0; i < args.length; i++) {
+				if (args[i].toLowerCase().contains("--printparam") == true && args[i].toLowerCase().contains("--printparamfile") == false) {
+					printParam = true;
+				}
+			}
+		} else {
+			UtilClass.DebugOutput("No parameters provided. Will run with defaults.");
+			UtilClass.DebugOutput("(Run again with parameter '--help' to print out parameter options and other information.)");
+			UtilClass.DebugOutput("(Run again with parameter '--printParam' to print out default or specified parameters for this execution.)");
+		}
+		
+		UtilClass.DebugOutput("Starting up ImageJ Batch Job Handler (or whatever software we're launching multiple instances of) in 2 seconds.");
+		UtilClass.DebugOutput("VERSION: " + UtilClass.version);
+		UtilClass.DebugOutput("---");
+		try {
+			TimeUnit.SECONDS.sleep(2);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+
+		
+
+		
+		
+		if (functionMode.contains("1") == true) {
 			// if inputData == null and inputDataDir != null, read all image files in that immediate directory
 			if (task01images.length()>0 && task01imagesDir.length()>0) {
 				int task01imagesNum = Integer.parseInt(task01images.replace("|", ""));
@@ -275,6 +303,39 @@ public class ImageJ_Manager {
 					}	
 				}
 			}
+			if (printParam == true) {
+				UtilClass.DebugOutput("****These are the recognized input parameters (if not specified by the user, these are the defaults).****");
+				UtilClass.DebugOutput("gui = " + gui);
+				UtilClass.DebugOutput("functionMode = " + functionMode);
+				UtilClass.DebugOutput("task01maxThreads = " + task01maxThreads);
+				UtilClass.DebugOutput("task01timeout = " + task01timeout);
+				UtilClass.DebugOutput("task01retryFails = " + task01retryFails);
+				UtilClass.DebugOutput("task01cmd = " + task01cmd);
+				UtilClass.DebugOutput("task01imagesDir = " + task01imagesDir);
+				UtilClass.DebugOutput("task01images = " + task01images);
+				for (int a = 0; a < task01input.length; a++) {
+					if (task01input[a] != null) {
+						UtilClass.DebugOutput("task01input0" + a + " = ");
+						for (int b = 0; b < task01input[a].length; b++) {
+							UtilClass.DebugOutput(task01input[a][b]);
+							if (b < task01input[a].length - 1) {
+								UtilClass.DebugOutput(", ");
+							}
+						}
+						UtilClass.DebugOutput("\n");
+					}
+				}
+				UtilClass.DebugOutput("****End of input parameters.****\n\n");
+			}
+			thisManager.task01maxThreads = task01maxThreads;
+			thisManager.task01timeout = task01timeout;
+			thisManager.task01retryFails = task01retryFails;
+			thisManager.task01cmd = task01cmd;
+			thisManager.task01input = task01input;
+			thisManager.task01images = Integer.parseInt(task01images.replace("|", ""));
+			thisManager.Initialize_Start();
+		}
+		if (functionMode.contains("2") == true) {
 			if (task02images.length()>0 && task02imagesDir.length()>0) {
 				int task02imagesNum = Integer.parseInt(task02images.replace("|", ""));
 				int task02imagesDirNum = Integer.parseInt(task02imagesDir.replace("|", ""));
@@ -303,86 +364,35 @@ public class ImageJ_Manager {
 					}	
 				}
 			}
-
-			for (int i = 0; i < args.length; i++) {
-				if (args[i].toLowerCase().contains("--printparam") == true && args[i].toLowerCase().contains("--printparamfile") == false) {
-					System.out.println("****These are the recognized input parameters (if not specified by the user, these are the defaults).****");
-					System.out.println("gui = " + gui);
-					System.out.println("functionMode = " + functionMode);
-					System.out.println("task01maxThreads = " + task01maxThreads);
-					System.out.println("task01timeout = " + task01timeout);
-					System.out.println("task01retryFails = " + task01retryFails);
-					System.out.println("task01cmd = " + task01cmd);
-					System.out.println("task01imagesDir = " + task01imagesDir);
-					System.out.println("task01images = " + task01images);
-					for (int a = 0; a < task01input.length; a++) {
-						if (task01input[a] != null) {
-							System.out.print("task01input0" + a + " = ");
-							for (int b = 0; b < task01input[a].length; b++) {
-								System.out.print(task01input[a][b]);
-								if (b < task01input[a].length - 1) {
-									System.out.print(", ");
-								}
+			if (printParam == true) {
+				UtilClass.DebugOutput("****These are the recognized input parameters (if not specified by the user, these are the defaults).****");
+				UtilClass.DebugOutput("task02maxThreads = " + task02maxThreads);
+				UtilClass.DebugOutput("task02timeout = " + task02timeout);
+				UtilClass.DebugOutput("task02retryFails = " + task02retryFails);
+				UtilClass.DebugOutput("task02cmd = " + task02cmd);
+				UtilClass.DebugOutput("task02imagesDir = " + task02imagesDir);
+				UtilClass.DebugOutput("task02images = " + task02images);
+				for (int a = 0; a < task02input.length; a++) {
+					if (task02input[a] != null) {
+						UtilClass.DebugOutput("task02input0" + a + " = ");
+						for (int b = 0; b < task02input[a].length; b++) {
+							UtilClass.DebugOutput(task02input[a][b]);
+							if (b < task02input[a].length - 1) {
+								UtilClass.DebugOutput(", ");
 							}
-							System.out.print("\n");
 						}
+						UtilClass.DebugOutput("\n");
 					}
-					System.out.println("task02maxThreads = " + task02maxThreads);
-					System.out.println("task02timeout = " + task02timeout);
-					System.out.println("task02retryFails = " + task02retryFails);
-					System.out.println("task02cmd = " + task02cmd);
-					System.out.println("task02imagesDir = " + task02imagesDir);
-					System.out.println("task02images = " + task02images);
-					for (int a = 0; a < task02input.length; a++) {
-						if (task02input[a] != null) {
-							System.out.print("task02input0" + a + " = ");
-							for (int b = 0; b < task02input[a].length; b++) {
-								System.out.print(task02input[a][b]);
-								if (b < task02input[a].length - 1) {
-									System.out.print(", ");
-								}
-							}
-							System.out.print("\n");
-						}
-					}
-					System.out.println("****End of input parameters.****\n\n");
 				}
+				UtilClass.DebugOutput("****End of input parameters.****\n\n");
 			}
-		} else {
-			System.out.println("No parameters provided. Will run with defaults.");
-			System.out.println("(Run again with parameter '--help' to print out parameter options and other information.)");
-			System.out.println("(Run again with parameter '--printParam' to print out default or specified parameters for this execution.)");
-		}
-		
-		System.out.println("Starting up ImageJ Batch Job Handler (or whatever software we're launching multiple instances of) in 2 seconds.");
-		System.out.println("VERSION: " + version);
-		System.out.println("---");
-		try {
-			TimeUnit.SECONDS.sleep(2);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		
-		thisManager.task01maxThreads = task01maxThreads;
-		thisManager.task01timeout = task01timeout;
-		thisManager.task01retryFails = task01retryFails;
-		thisManager.task01cmd = task01cmd;
-		thisManager.task01input = task01input;
-		thisManager.task01images = Integer.parseInt(task01images.replace("|", ""));
-		
-		thisManager.task02maxThreads = task02maxThreads;
-		thisManager.task02timeout = task02timeout;
-		thisManager.task02retryFails = task02retryFails;
-		thisManager.task02cmd = task02cmd;
-		thisManager.task02input = task02input;
-		thisManager.task02images = Integer.parseInt(task02images.replace("|", ""));
-		thisManager.task02imagesDir = Integer.parseInt(task02imagesDir.replace("|", ""));
-		
-		
-		if (functionMode.contains("1") == true) {
-			thisManager.Initialize_Start();
-		}
-		if (functionMode.contains("2") == true) {
+			thisManager.task02maxThreads = task02maxThreads;
+			thisManager.task02timeout = task02timeout;
+			thisManager.task02retryFails = task02retryFails;
+			thisManager.task02cmd = task02cmd;
+			thisManager.task02input = task02input;
+			thisManager.task02images = Integer.parseInt(task02images.replace("|", ""));
+			thisManager.task02imagesDir = Integer.parseInt(task02imagesDir.replace("|", ""));
 			thisManager.ImageJ_StartJobs();
 		} 
 		if (functionMode.contains("3") == true) {
@@ -390,8 +400,8 @@ public class ImageJ_Manager {
 		}
 		
 		
-		System.out.println("---");
-		System.out.println("Finished, closed.");
+		UtilClass.DebugOutput("---");
+		UtilClass.DebugOutput("Finished, closed.");
 	}
 	
 	public ImageJ_Manager() {
@@ -399,78 +409,57 @@ public class ImageJ_Manager {
 	}
 	
 	public void PrintHelpDocs(String version) {
-		System.out.println("**** HELP DOCS ****");
-		System.out.println("This is a program written in Java to batch-run multiple instances of one program");
-		System.out.println("  as they would be run in a command-line interface.");
-		System.out.println("This was originally written to run an ImageJ script as a batch job on a compute server.");
-		System.out.println("Originally written by Andrew Hlynka at the University of Michigan in 2021.");
-		System.out.println("VERSION: " + version);
-		System.out.println("---");
-		System.out.println("Parameters:");
-		/*System.out.println("\t--help \t\t\t: List out documentation / parameter options.");
-		System.out.println("\t--paramFile \t\t: Use input .txt file (with full file path or local path) as parameter input."); 
-		System.out.println("\t\t\t\tThis input is overrided by any parameters defined in command line alongside --file definition.");
-		System.out.println("\t--printParamFile\t: Do not run program, but print out example input .txt file in same directory as this .jar for use.");
-		System.out.println("\t--printParam\t\t: Print / display parameter values used for this execution.");
-		System.out.println("\t--maxThreads \t\t: Number (integer, >= 1) that defines how many parallel threads to run at a time.");
-		System.out.println("\t--timeout \t\t: Number (integer, >= 0) in milliseconds (1000 = 1 second) that defines how long to wait before forcing a program thread to close.");
-		System.out.println("\t\t\t\tAssume this occurs only due to error in program instance that causes it to pause / wait indefinitely.");
-		System.out.println("\t\t\t\tIf timeout occurs, this program will assume user's input program had failed for that instance.");
-		System.out.println("\t--retryFails \t\t: Number (integer, >= 0). If program instance from batch jobs fails (based on 'timeout' value), launch again 'n' number of times.");
-		System.out.println("\t--gui \t\t\t: Open with built-in Java Swing GUI (NOT IMPLEMENTED YET). True by default.");
-		System.out.println("\t--progCommand \t\t: The explicit command to run one instance of the program through the command line.");
-		System.out.println("\t--progDir \t\t: The directory of the program (would be used with --progCommand).");
-		System.out.println("\t--inputScript \t\t: Input script to open and launch with program.");
-		System.out.println("\t--inputScriptDir \t\t: The directory of the input script (would be used with --inputScript).");
-		System.out.println("\t--inputData \t\t: Input data / image files. Assumption is that each batch-job instance will work on 1 data file.");
-		System.out.println("\t\t\t\tAll input data should be listed as one parameter, separated by ',' with no spaces. ");
-		System.out.println("\t--inputDataDir \t\t: The directory of the input data files (if 'inputData' is undefined, assume all files in this directory).");
-		System.out.println("\t--initCommand \t\t: System command to launch user's script (example: Python) to initialize data.");
-		System.out.println("\t--functionMode \t\t: Defines which function (or combination of functions) to run.");
-		System.out.println("\t\t\t\t1 = Run ImageJ job(s) to analyze data (parallel),");
-		System.out.println("\t\t\t\t2 = Run initial job(s) to prepare data (not parallel),");
-		System.out.println("\t\t\t\t3 = Combine and summarize .csv output files,");
-		System.out.println("\t\t\t\t4 = function 2, then 1, 5 = function 1, then 3, 6 = function 2, then 1, then 3.");*/
-		System.out.println("\t--help \t\t\t: List out documentation / parameter options.");
-		System.out.println("\t--paramFile \t\t: Use input .txt file (with full file path or local path) as parameter input."); 
-		System.out.println("\t\t\t\t\tThis input is overrided by any parameters defined in command line alongside --file definition.");
-		System.out.println("\t--printParamFile\t: Do not run program, but print out example input .txt file in same directory as this .jar for use.");
-		System.out.println("\t--printParam\t\t: Print / display parameter values used for this execution.");
-		System.out.println("\t--gui \t\t\t: Open with built-in Java Swing GUI (NOT IMPLEMENTED YET). True by default.");
-		System.out.println("\t--functionMode \t\t: Defines which function (or combination of functions) to run.");
-		System.out.println("\t\t\t\t\t1 = Run Python job(s) to prepare data (parallel),");
-		System.out.println("\t\t\t\t\t2 = Run ImageJ job(s) to analyze data (parallel),");
-		System.out.println("\t\t\t\t\t3 = Combine and summarize .csv output files,");
-		System.out.println("\t\t\t\t\t123 = Example that runs 1, then 2, then 3.");
-		System.out.println("");
-		System.out.println("\t--task01cmd\t\t: The explicit command to run one instance of the program through the command line.");
-		System.out.println("\t\t\t\t\tIncludes special notation (||1||, ||2||, etc.) to set variables that can be defined.");
-		System.out.println("\t--task01timeout\t\t: Number (integer, >= 0) in milliseconds (1000 = 1 second) that defines how long to wait before forcing a program thread to close.");
-		System.out.println("\t--task01maxThreads\t: Number (integer, >= 1) that defines how many parallel threads to run at a time.");
-		System.out.println("\t--task01retryFails\t: Number (integer, >= 0). If program instance from batch jobs fails (based on 'timeout' value), launch again 'n' number of times.");
-		System.out.println("\t--task01input01\t\t: The corresponding value(s) as defined by ||1|| in task01cmd.");
-		System.out.println("\t\t\t\t\tRepeats for task01input01, 02, 03, ..., 09");
-		System.out.println("\t\t\t\t\tFor explicitly defining multiple images, use ',' to separate within one input. Example: 'image01,image02,image03' ");
-		System.out.println("\t--task01images\t\t: Which of task01input0X corresponds to file names of input images? (Example: ||2||)");
-		System.out.println("\t\t\t\t\tIf blank, assumes all image files in 'task01imagesDir' are the input.");
-		System.out.println("\t--task01imagesDir\t: Which of task01input0X corresponds to file directory of input images? (Example: ||2||)");
-		System.out.println("");
-		System.out.println("\tAll parameters that start with 'task01' exist for 'task02' as well.");
+		String totalString = "";
+		totalString += "**** HELP DOCS ****" + "\n";
+		totalString += "This is a program written in Java to batch-run multiple instances of one program" + "\n";
+		totalString += "  as they would be run in a command-line interface." + "\n";
+		totalString += "This was originally written to run an ImageJ script as a batch job on a compute server." + "\n";
+		totalString += "Originally written by Andrew Hlynka at the University of Michigan in 2021." + "\n";
+		totalString += "VERSION: " + version + "\n";
+		totalString += "---" + "\n";
+		totalString += "Parameters:" + "\n";
+		totalString += "\t--help \t\t\t: List out documentation / parameter options." + "\n";
+		totalString += "\t--paramFile \t\t: Use input .txt file (with full file path or local path) as parameter input." + "\n"; 
+		totalString += "\t\t\t\t\tThis input is overrided by any parameters defined in command line alongside --file definition." + "\n";
+		totalString += "\t--printParamFile\t: Do not run program, but print out example input .txt file in same directory as this .jar for use." + "\n";
+		totalString += "\t--printParam\t\t: Print / display parameter values used for this execution." + "\n";
+		totalString += "\t--gui \t\t\t: Open with built-in Java Swing GUI (NOT IMPLEMENTED YET). True by default." + "\n";
+		totalString += "\t--functionMode \t\t: Defines which function (or combination of functions) to run." + "\n";
+		totalString += "\t\t\t\t\t1 = Run Python job(s) to prepare data (parallel)," + "\n";
+		totalString += "\t\t\t\t\t2 = Run ImageJ job(s) to analyze data (parallel)," + "\n";
+		totalString += "\t\t\t\t\t3 = Combine and summarize .csv output files," + "\n";
+		totalString += "\t\t\t\t\t123 = Example that runs 1, then 2, then 3." + "\n";
+		totalString += "" + "\n";
+		totalString += "\t--task01cmd\t\t: The explicit command to run one instance of the program through the command line."+"\n";
+		totalString += "\t\t\t\t\tIncludes special notation (||1||, ||2||, etc.) to set variables that can be defined."+"\n";
+		totalString += "\t--task01timeout\t\t: Number (integer, >= 0) in milliseconds (1000 = 1 second) that defines how long to wait before forcing a program thread to close."+"\n";
+		totalString += "\t--task01maxThreads\t: Number (integer, >= 1) that defines how many parallel threads to run at a time."+"\n";
+		totalString += "\t--task01retryFails\t: Number (integer, >= 0). If program instance from batch jobs fails (based on 'timeout' value), launch again 'n' number of times."+"\n";
+		totalString += "\t--task01input01\t\t: The corresponding value(s) as defined by ||1|| in task01cmd."+"\n";
+		totalString += "\t\t\t\t\tRepeats for task01input01, 02, 03, ..., 09"+"\n";
+		totalString += "\t\t\t\t\tFor explicitly defining multiple images, use ',' to separate within one input. Example: 'image01,image02,image03' "+"\n";
+		totalString += "\t--task01images\t\t: Which of task01input0X corresponds to file names of input images? (Example: ||2||)"+"\n";
+		totalString += "\t\t\t\t\tIf blank, assumes all image files in 'task01imagesDir' are the input."+"\n";
+		totalString += "\t--task01imagesDir\t: Which of task01input0X corresponds to file directory of input images? (Example: ||2||)"+"\n";
+		totalString += ""+"\n";
+		totalString += "\tAll parameters that start with 'task01' exist for 'task02' as well."+"\n";
 		
-		System.out.println("---");
-		System.out.println("Examples:");
-		System.out.println("\t(run with default internal parameters)");
-		System.out.println("\t(run with just input file)");
-		System.out.println("\t(run with defined input parameters, absolute directory)");
-		System.out.println("\t(run with some defined parameters, local directory)");
-		System.out.println("---");
+		totalString += "---"+"\n";
+		totalString += "Examples:"+"\n";
+		totalString += "\t(run with default internal parameters)"+"\n";
+		totalString += "\t(run with just input file)"+"\n";
+		totalString += "\t(run with defined input parameters, absolute directory)"+"\n";
+		totalString += "\t(run with some defined parameters, local directory)"+"\n";
+		totalString += "---"+"\n";
+		
+		UtilClass.DebugOutput(totalString);
 	}
 	
 	public void PrintExampleParamFile() {
-		System.out.println("Printing example parameter file for this program in same directory (not running program).");
-		System.out.println("Use / edit the input parameter file as needed, use with parameter '--paramFile' in command line execution.");
-		System.out.println("WARNING: THIS FEATURE ISN'T IMPLEMENTED YET.");
-		System.out.println("Finished.");
+		UtilClass.DebugOutput("Printing example parameter file for this program in same directory (not running program).");
+		UtilClass.DebugOutput("Use / edit the input parameter file as needed, use with parameter '--paramFile' in command line execution.");
+		UtilClass.DebugOutput("WARNING: THIS FEATURE ISN'T IMPLEMENTED YET.");
+		UtilClass.DebugOutput("Finished.");
 	}
 	
 	public String ImageJ_ReadParameter(String removeString, String inputArg, int type) {
@@ -489,10 +478,10 @@ public class ImageJ_Manager {
 				boolean testBool = Boolean.parseBoolean(returnValue);
 			}
 		} catch (Exception e) {
-			System.out.println("ERROR: Input parameter " + removeString + " recognized, but issue parsing out value.");
+			UtilClass.DebugOutput("ERROR: Input parameter " + removeString + " recognized, but issue parsing out value.");
 			e.printStackTrace();
 		}
-		System.out.println(">>>> read parameter -> " + removeString + " = " + returnValue);
+		UtilClass.DebugOutput(">>>> read parameter -> " + removeString + " = " + returnValue);
 		return returnValue;
 	}
 	
@@ -502,7 +491,7 @@ public class ImageJ_Manager {
 			inputArg = inputArg.toLowerCase().replace(removeString, "");
 			returnValue = inputArg.split(",");
 		} catch (Exception e) {
-			System.out.println("ERROR: Input parameter ' " + removeString + " ' recognized, but issue parsing out value.");
+			UtilClass.DebugOutput("ERROR: Input parameter ' " + removeString + " ' recognized, but issue parsing out value.");
 			e.printStackTrace();
 		}
 		return returnValue;
@@ -535,16 +524,16 @@ public class ImageJ_Manager {
 	
 	long startExecutionTime = 0;
 	
-	public void ImageJ_StartJobs() {
+	public int ImageJ_StartJobs() {
 		
-		System.out.println("TASK 2:");
+		UtilClass.DebugOutput("TASK 2:");
 		
-		System.out.println("System OS: " + System.getProperty("os.name"));
-		System.out.println("Total number of system cores: " + Runtime.getRuntime().availableProcessors());
-		System.out.println("Total amount of JVM memory (GB): " + String.format("%.4f",Runtime.getRuntime().totalMemory()*0.001f*0.001f*0.001f));
+		UtilClass.DebugOutput("System OS: " + System.getProperty("os.name"));
+		UtilClass.DebugOutput("Total number of system cores: " + Runtime.getRuntime().availableProcessors());
+		UtilClass.DebugOutput("Total amount of JVM memory (GB): " + String.format("%.4f",Runtime.getRuntime().totalMemory()*0.001f*0.001f*0.001f));
 		
-		System.out.println("Set to run this many concurrent threads: " + task02maxThreads);
-		System.out.println("Defined timeout time (seconds): " + task02timeout*0.001f);
+		UtilClass.DebugOutput("Set to run this many concurrent threads: " + task02maxThreads);
+		UtilClass.DebugOutput("Defined timeout time (seconds): " + task02timeout*0.001f);
 		long startTime = System.nanoTime();
 		startExecutionTime = System.currentTimeMillis();
 		
@@ -572,8 +561,8 @@ public class ImageJ_Manager {
 			execService.execute(processThreads[i]);
 		}
 		
-		System.out.println("Waiting for threads to finish...");
-		System.out.println("");
+		UtilClass.DebugOutput("Waiting for threads to finish...");
+		UtilClass.DebugOutput("");
 		execService.shutdown();
 		try {
 			execService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
@@ -603,31 +592,32 @@ public class ImageJ_Manager {
 			avgSeconds = -1;
 		}
 		
-		System.out.println("");
-		System.out.println("All threads finished.");
+		UtilClass.DebugOutput("");
+		UtilClass.DebugOutput("All threads finished.");
 		double totalSeconds = (System.nanoTime() - startTime)*0.000000001f;
-		System.out.println("Total execution time (seconds): " + String.format("%.0f",totalSeconds) + "   |   (minutes): " + String.format("%.2f",(totalSeconds/60f)));
-		System.out.println("Average execution time for successful threads (seconds): " + String.format("%.0f", avgSeconds));
-		System.out.println("Max execution time for successful threads (seconds): " + String.format("%.0f", maxSeconds));
+		UtilClass.DebugOutput("Total execution time (seconds): " + String.format("%.0f",totalSeconds) + "   |   (minutes): " + String.format("%.2f",(totalSeconds/60f)));
+		UtilClass.DebugOutput("Average execution time for successful threads (seconds): " + String.format("%.0f", avgSeconds));
+		UtilClass.DebugOutput("Max execution time for successful threads (seconds): " + String.format("%.0f", maxSeconds));
+		UtilClass.DebugOutputNoLine("\n");
 		int failedRuns = 0;
 		for (int i = 0; i < task02input[task02images].length; i++)
 		{
-			System.out.print("Thread " + (i+1) + " : ");
+			UtilClass.DebugOutputNoLine("Thread " + (i+1) + " : ");
 			if (threadSuccess[i] == true) {
-				System.out.print("SUCCESS");
+				UtilClass.DebugOutputNoLine("SUCCESS");
 			} else {
-				System.out.print("FAIL");
+				UtilClass.DebugOutputNoLine("FAIL");
 				failedRuns++;
 			}
-			System.out.print(", \t");
+			UtilClass.DebugOutputNoLine(", \t");
 			if (i % 3 == 2) {
-				System.out.print("\n");
+				UtilClass.DebugOutputNoLine("\n");
 			}
 		}
-		System.out.print("\n");
+		UtilClass.DebugOutput("\n");
 		
 		while (task02retryFails > 0 && failedRuns > 0) {
-			System.out.println("Retry allowed for failed threads. Retries left: " + task02retryFails);
+			UtilClass.DebugOutput("Retry allowed for failed threads. Retries left: " + task02retryFails);
 			task02retryFails--;
 			failedRuns = 0;
 			
@@ -639,8 +629,8 @@ public class ImageJ_Manager {
 				}
 			}
 			
-			System.out.println("Waiting for threads to finish...");
-			System.out.println("");
+			UtilClass.DebugOutput("Waiting for threads to finish...");
+			UtilClass.DebugOutput("");
 			execService.shutdown();
 			try {
 				execService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
@@ -654,32 +644,38 @@ public class ImageJ_Manager {
 				threadSuccess[i] = !processThreads[i].forcedClosed;
 			}
 			
-			System.out.println("");
-			System.out.println("All threads finished.");
+			UtilClass.DebugOutput("");
+			UtilClass.DebugOutput("All threads finished.");
 			totalSeconds = (System.nanoTime() - startTime)*0.000000001f;
-			System.out.println("Total execution time (seconds): " + String.format("%.0f",totalSeconds) + "   |   (minutes): " + String.format("%.2f",(totalSeconds/60f)));
+			UtilClass.DebugOutput("Total execution time (seconds): " + String.format("%.0f",totalSeconds) + "   |   (minutes): " + String.format("%.2f",(totalSeconds/60f)));
+			UtilClass.DebugOutputNoLine("\n");
 			for (int i = 0; i < task02input[task02images].length; i++)
 			{
-				System.out.print("Thread " + (i+1) + " : ");
+				UtilClass.DebugOutputNoLine("Thread " + (i+1) + " : ");
 				if (threadSuccess[i] == true) {
-					System.out.print("SUCCESS");
+					UtilClass.DebugOutputNoLine("SUCCESS");
 				} else {
-					System.out.print("FAIL");
+					UtilClass.DebugOutputNoLine("FAIL");
 					failedRuns++;
 				}
-				System.out.print(", \t");
+				UtilClass.DebugOutputNoLine(", \t");
 				if (i % 3 == 2) {
-					System.out.print("\n");
+					UtilClass.DebugOutputNoLine("\n");
 				}
 			}
-			System.out.print("\n");
+			UtilClass.DebugOutput("\n");
 		}
-		System.out.println("---\n\n");
+		UtilClass.DebugOutput("---\n\n");
+		
+		if (failedRuns > 0)
+			return -1;
+		else
+			return 1;
 	}
 	
-	public void CombineCSV_Start() {
+	public int CombineCSV_Start() {
 		
-		System.out.println("TASK 3:");
+		UtilClass.DebugOutput("TASK 3:");
 		
 		String currentDateText = "";
 		Calendar calendar = Calendar.getInstance();
@@ -691,7 +687,7 @@ public class ImageJ_Manager {
 				+ String.format("%02d", calendar.get(Calendar.MINUTE)) + ""
 				+ String.format("%02d", calendar.get(Calendar.SECOND)); 
 		
-		System.out.println("Now combining .csv files into one large file called 'summary_" + currentDateText + ".csv'...");
+		UtilClass.DebugOutput("Now combining .csv files into one large file called 'summary_" + currentDateText + ".csv'...");
 		
 		String[] csvFiles = null;
 		if (task02input[task02imagesDir][0] != null) {
@@ -715,7 +711,7 @@ public class ImageJ_Manager {
 			}
 		}
 		
-		System.out.println("This many .csv files found: " + csvFiles.length);
+		UtilClass.DebugOutput("This many .csv files found: " + csvFiles.length);
 		
 		String outputCsv = "";
 		for (int i = 0; i < csvFiles.length; i++) {
@@ -736,9 +732,10 @@ public class ImageJ_Manager {
 					//System.out.println(argsLine);					
 				}
 				outputCsv += "\n";
-				
+				readFile.close();
 			} catch (Exception e) {
 				e.printStackTrace();
+				return -1;
 			}
 			
 		}
@@ -749,16 +746,19 @@ public class ImageJ_Manager {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return -1;
 		}
 		
 		
-		System.out.println(".csv file task done.");
-		System.out.println("---\n\n");
+		UtilClass.DebugOutput(".csv file task done.");
+		UtilClass.DebugOutput("---\n\n");
+		
+		return 1;
 	}
 	
-	public void Initialize_Start() {
-		System.out.println("TASK 01:");
-		System.out.println("Running user's specified script to initialize data before ImageJ part.");
+	public int Initialize_Start() {
+		UtilClass.DebugOutput("TASK 01:");
+		UtilClass.DebugOutput("Running user's specified script to initialize data before ImageJ part.");
 		
 		long startTime = System.nanoTime();
 		startExecutionTime = System.currentTimeMillis();
@@ -801,8 +801,8 @@ public class ImageJ_Manager {
 			execService.execute(processThreads[i]);
 		}
 		
-		System.out.println("Waiting for threads to finish...");
-		System.out.println("");
+		UtilClass.DebugOutput("Waiting for threads to finish...");
+		UtilClass.DebugOutput("");
 		execService.shutdown();
 		try {
 			execService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
@@ -832,31 +832,32 @@ public class ImageJ_Manager {
 			avgSeconds = -1;
 		}
 		
-		System.out.println("");
-		System.out.println("All threads finished.");
+		UtilClass.DebugOutput("");
+		UtilClass.DebugOutput("All threads finished.");
 		double totalSeconds = (System.nanoTime() - startTime)*0.000000001f;
-		System.out.println("Total execution time (seconds): " + String.format("%.0f",totalSeconds) + "   |   (minutes): " + String.format("%.2f",(totalSeconds/60f)));
-		System.out.println("Average execution time for successful threads (seconds): " + String.format("%.0f", avgSeconds));
-		System.out.println("Max execution time for successful threads (seconds): " + String.format("%.0f", maxSeconds));
+		UtilClass.DebugOutput("Total execution time (seconds): " + String.format("%.0f",totalSeconds) + "   |   (minutes): " + String.format("%.2f",(totalSeconds/60f)));
+		UtilClass.DebugOutput("Average execution time for successful threads (seconds): " + String.format("%.0f", avgSeconds));
+		UtilClass.DebugOutput("Max execution time for successful threads (seconds): " + String.format("%.0f", maxSeconds));
+		UtilClass.DebugOutputNoLine("\n");
 		int failedRuns = 0;
 		for (int i = 0; i < task01input[task01images].length; i++)
 		{
-			System.out.print("Thread " + (i+1) + " : ");
+			UtilClass.DebugOutputNoLine("Thread " + (i+1) + " : ");
 			if (threadSuccess[i] == true) {
-				System.out.print("SUCCESS");
+				UtilClass.DebugOutputNoLine("SUCCESS");
 			} else {
-				System.out.print("FAIL");
+				UtilClass.DebugOutputNoLine("FAIL");
 				failedRuns++;
 			}
-			System.out.print(", \t");
+			UtilClass.DebugOutputNoLine(", \t");
 			if (i % 3 == 2) {
-				System.out.print("\n");
+				UtilClass.DebugOutputNoLine("\n");
 			}
 		}
-		System.out.print("\n");
+		UtilClass.DebugOutput("\n");
 		
 		while (task01retryFails > 0 && failedRuns > 0) {
-			System.out.println("Retry allowed for failed threads. Retries left: " + task01retryFails);
+			UtilClass.DebugOutput("Retry allowed for failed threads. Retries left: " + task01retryFails);
 			task01retryFails--;
 			failedRuns = 0;
 			
@@ -868,8 +869,8 @@ public class ImageJ_Manager {
 				}
 			}
 			
-			System.out.println("Waiting for threads to finish...");
-			System.out.println("");
+			UtilClass.DebugOutput("Waiting for threads to finish...");
+			UtilClass.DebugOutput("");
 			execService.shutdown();
 			try {
 				execService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
@@ -883,28 +884,34 @@ public class ImageJ_Manager {
 				threadSuccess[i] = !processThreads[i].forcedClosed;
 			}
 			
-			System.out.println("");
-			System.out.println("All threads finished.");
+			UtilClass.DebugOutput("");
+			UtilClass.DebugOutput("All threads finished.");
 			totalSeconds = (System.nanoTime() - startTime)*0.000000001f;
-			System.out.println("Total execution time (seconds): " + String.format("%.0f",totalSeconds) + "   |   (minutes): " + String.format("%.2f",(totalSeconds/60f)));
+			UtilClass.DebugOutput("Total execution time (seconds): " + String.format("%.0f",totalSeconds) + "   |   (minutes): " + String.format("%.2f",(totalSeconds/60f)));
+			UtilClass.DebugOutputNoLine("\n");
 			for (int i = 0; i < task01input[task01images].length; i++)
 			{
-				System.out.print("Thread " + (i+1) + " : ");
+				UtilClass.DebugOutputNoLine("Thread " + (i+1) + " : ");
 				if (threadSuccess[i] == true) {
-					System.out.print("SUCCESS");
+					UtilClass.DebugOutputNoLine("SUCCESS");
 				} else {
-					System.out.print("FAIL");
+					UtilClass.DebugOutputNoLine("FAIL");
 					failedRuns++;
 				}
-				System.out.print(", \t");
+				UtilClass.DebugOutputNoLine(", \t");
 				if (i % 3 == 2) {
-					System.out.print("\n");
+					UtilClass.DebugOutputNoLine("\n");
 				}
 			}
-			System.out.print("\n");
+			UtilClass.DebugOutput("\n");
 		}
 		
-		System.out.println("Finished initializing data.");
-		System.out.println("---\n\n");
+		UtilClass.DebugOutput("Finished initializing data.");
+		UtilClass.DebugOutput("---\n\n");
+		
+		if (failedRuns > 0)
+			return -1;
+		else
+			return 1;
 	}
 }

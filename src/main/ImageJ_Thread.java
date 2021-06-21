@@ -24,6 +24,7 @@ public class ImageJ_Thread implements Runnable{
 		Timer t = new Timer();
 		long startTime = System.nanoTime();
 		try {
+			UtilClass.DebugOutput("(Thread " + threadIndex + "/" + threadTotal + "...)");
 			System.out.println(">> Running thread " + threadIndex + " of " + threadTotal + " ... " + sysCommand);
 			
 			Process process = Runtime.getRuntime().exec(sysCommand);
