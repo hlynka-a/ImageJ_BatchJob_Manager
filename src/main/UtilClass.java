@@ -13,7 +13,7 @@ public class UtilClass {
 	public static JLabel jlabel_status;
 	public static JPanel jpanel_status;
 	public static boolean gui = false;
-	public static String version = "v0.91 | 2021-05-21";
+	public static String version = "v0.96 | 2021-06-29";
 	
 	public static void DebugOutput(String message) {
 		System.out.println(message);

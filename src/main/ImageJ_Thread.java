@@ -17,8 +17,15 @@ public class ImageJ_Thread implements Runnable{
 	public boolean threadFinished = false;
 	boolean forcedClosed = false;
 	public double timeFinished = 0;
+	boolean requestCanceled = false;
+	
+	Process process;
 	
 	public void run() {
+		if (requestCanceled == true) {
+			requestCanceled = false;
+			return;
+		}
 		forcedClosed = false;
 		threadFinished = false;
 		Timer t = new Timer();
@@ -27,8 +34,8 @@ public class ImageJ_Thread implements Runnable{
 			UtilClass.DebugOutput("(Thread " + threadIndex + "/" + threadTotal + "...)");
 			System.out.println(">> Running thread " + threadIndex + " of " + threadTotal + " ... " + sysCommand);
 			
-			Process process = Runtime.getRuntime().exec(sysCommand);
-			
+			//Process process = Runtime.getRuntime().exec(sysCommand);
+			process = Runtime.getRuntime().exec(sysCommand);
 			
 			t.schedule(new TimerTask() {
 				@Override
@@ -66,5 +73,34 @@ public class ImageJ_Thread implements Runnable{
 		t.cancel();
 		timeFinished = (System.nanoTime() - startTime)*0.000000001f;
 		return;
+	}
+	
+	public void Cancel() {
+		requestCanceled = true;
+		try {
+			UtilClass.DebugOutput("Requested cancel task, if it is alive. Alive task = " + process.isAlive());
+			if (process.isAlive()) {
+				requestCanceled = false;
+				UtilClass.DebugOutput("Canceling active thread = " + threadIndex);
+				forcedClosed = true;
+				process.destroyForcibly();
+				UtilClass.DebugOutput("Canceled active thread = " + threadIndex);
+			} else {
+				UtilClass.DebugOutput("Even though task isn't alive, try to cancel it anyway.");
+				try {
+					requestCanceled = false;
+					UtilClass.DebugOutput("Canceling (non-active?) thread = " + threadIndex);
+					forcedClosed = true;
+					process.destroyForcibly();
+					UtilClass.DebugOutput("Canceled (non-active?) thread = " + threadIndex);
+				} catch (Exception e) {
+					UtilClass.DebugOutput("(Error occurred when trying to cancel this thread... continue on...");
+					e.printStackTrace();
+				}
+			}
+		} catch (Exception e) {
+			UtilClass.DebugOutput("(Error occurred when trying to reference this thread and cancel it... continue on...");
+			e.printStackTrace();
+		}
 	}
 }

@@ -28,7 +28,7 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
      * Creates new form JavaBatchJFrameClass
      */
     public ImageJ_Jobs_GUI() {
-        initComponents();
+        //initComponents();
     }
 
     /**
@@ -47,6 +47,7 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
         jpanel_status = new javax.swing.JPanel();
         jlabel_status = new javax.swing.JLabel();
         jbutton_execute = new javax.swing.JButton();
+        jbutton_cancel = new javax.swing.JButton();
         jcheckbox_task1 = new javax.swing.JCheckBox();
         jcheckbox_task2 = new javax.swing.JCheckBox();
         jcheckbox_task3 = new javax.swing.JCheckBox();
@@ -137,7 +138,7 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
@@ -173,7 +174,7 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.ipadx = 5;
@@ -187,7 +188,6 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
         jbutton_execute.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
             	LoadFromGUI();
-            	ClearOutput();
             	Execute();
             }
         });
@@ -197,9 +197,34 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.ipadx = 5;
         gridBagConstraints.ipady = 5;
-        gridBagConstraints.weightx = 0.4;
+        gridBagConstraints.weightx = 0.2;
         gridBagConstraints.insets = new java.awt.Insets(10, 10, 10, 10);
         getContentPane().add(jbutton_execute, gridBagConstraints);
+        
+        jbutton_cancel.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jbutton_cancel.setText("CANCEL NEXT JOB");
+        jbutton_cancel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+            	//LoadFromGUI();
+            	//ClearOutput();
+            	//Execute();
+            	if (currentlyRunning == 0) {
+            		UtilClass.DebugOutput("Cancel requested, but not currently running anything to cancel. Ignore request.");
+            		return;
+            	}
+            	Cancel();
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.ipadx = 5;
+        gridBagConstraints.ipady = 5;
+        gridBagConstraints.weightx = 0.2;
+        gridBagConstraints.insets = new java.awt.Insets(10, 10, 10, 10);
+        getContentPane().add(jbutton_cancel, gridBagConstraints);
+        
 
         jcheckbox_task1.setSelected(true);
         jcheckbox_task1.setText("Run Task 1");
@@ -439,7 +464,7 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         jP_task01.add(jTF_task01_9, gridBagConstraints);
 
-        jLabel14.setText("images:");
+        jLabel14.setText("input:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -453,7 +478,7 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         jP_task01.add(jTF_task01img, gridBagConstraints);
 
-        jLabel15.setText("images dir:");
+        jLabel15.setText("input dir:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 5;
@@ -478,7 +503,7 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weighty = 0.2;
@@ -684,7 +709,7 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         jP_task02.add(jTF_task02_9, gridBagConstraints);
 
-        jLabel30.setText("images:");
+        jLabel30.setText("input:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -698,7 +723,7 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         jP_task02.add(jTF_task02img, gridBagConstraints);
 
-        jLabel31.setText("images dir:");
+        jLabel31.setText("input dir:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 5;
@@ -723,7 +748,7 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weighty = 0.2;
@@ -743,7 +768,7 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weighty = 0.1;
         gridBagConstraints.insets = new java.awt.Insets(10, 10, 10, 10);
@@ -884,6 +909,8 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
     	}
     }
     
+    int currentlyRunning = 0;	//0 = not executing, 1 = in the middle of executing
+    
 	String paramFile = null;	//filepath
 	boolean gui = true;
 	boolean printParam = false;
@@ -917,6 +944,7 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
 			fileReader.close();
 			UtilClass.DebugOutput("---End of File Contents.---");
 			fileReader = new Scanner(inputFile);
+			LoadDefaults();
 			while (fileReader.hasNextLine()) {
 				String argsLine = fileReader.nextLine();
 				LoadFileLine(argsLine);
@@ -928,6 +956,40 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
 			e.printStackTrace();
 		}
     	
+    }
+    
+    private void LoadDefaults() {
+    	functionMode = "123";
+    	task01maxThreads = 2;
+		task01timeout = 10000;
+		task01retryFails = 1;
+		task01cmd = "sample cmd";
+		task01input[1] = null;
+		task01input[2] = null;
+		task01input[3] = null;
+		task01input[4] = null;
+		task01input[5] = null;
+		task01input[6] = null;
+		task01input[7] = null;
+		task01input[8] = null;
+		task01input[9] = null;
+		task01imagesDir = "";
+		task01images = "";
+    	task02maxThreads = 2;
+    	task02timeout = 10000;
+		task02retryFails = 1;
+		task02cmd = "sample cmd";
+		task02input[1] = null;
+		task02input[2] = null;
+		task02input[3] = null;
+		task02input[4] = null;
+		task02input[5] = null;
+		task02input[6] = null;
+		task02input[7] = null;
+		task02input[8] = null;
+		task02input[9] = null;
+		task02imagesDir = "";
+		task02images = "";
     }
     
     private void LoadFileLine(String argsLine) {
@@ -1106,6 +1168,15 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
     	jTF_task01threads.setText("" + task01maxThreads);
     	jTF_task01img.setText("" + task01images);
     	jTF_task01imgdir.setText("" + task01imagesDir);
+    	jTF_task01_1.setText("");
+    	jTF_task01_2.setText("");
+    	jTF_task01_3.setText("");
+    	jTF_task01_4.setText("");
+    	jTF_task01_5.setText("");
+    	jTF_task01_6.setText("");
+    	jTF_task01_7.setText("");
+    	jTF_task01_8.setText("");
+    	jTF_task01_9.setText("");
     	for (int i = 1; i < task01input.length; i++) {
     		String totalString = "";
     		if (task01input[i] != null) {
@@ -1143,6 +1214,15 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
     	jTF_task02threads.setText("" + task02maxThreads);
     	jTF_task02img.setText("" + task02images);
     	jTF_task02imgdir.setText("" + task02imagesDir);
+    	jTF_task02_1.setText("");
+    	jTF_task02_2.setText("");
+    	jTF_task02_3.setText("");
+    	jTF_task02_4.setText("");
+    	jTF_task02_5.setText("");
+    	jTF_task02_6.setText("");
+    	jTF_task02_7.setText("");
+    	jTF_task02_8.setText("");
+    	jTF_task02_9.setText("");
        	for (int i = 1; i < task02input.length; i++) {
     		String totalString = "";
     		if (task02input[i] != null) {
@@ -1385,7 +1465,15 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
 		@Override
 		protected Integer doInBackground() throws Exception {
 		
-			int resultStatus = 0;	//0 = not done, -1 = error, 1 = success
+			if (currentlyRunning == 1) {
+				UtilClass.DebugOutput("Already executing something, please wait for that to finish... Ignoring new Execute request.");
+				return 0;
+			}
+			
+			ClearOutput();
+			currentlyRunning = 1;
+			
+			int resultStatus = 0;	//0 = not done, -1 = error, 1 = success, -2 = requested to cancel
 			
 			UtilClass.StatusOutput("Launching...", Color.LIGHT_GRAY);
 			UtilClass.DebugOutput("Starting up ImageJ Batch Job Handler (or whatever software we're launching multiple instances of) in 2 seconds.");
@@ -1397,10 +1485,20 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
 				e.printStackTrace();
 			}
 			
+			if (cancelRequest == 1) {
+				UtilClass.DebugOutput("Requested to cancel. Do not proceed to next process.");
+				cancelRequest = 0;
+				currentlyRunning = 0;
+				UtilClass.StatusOutput("Cancelation complete.", Color.GRAY);
+				return -2;
+			}
+			
 			UtilClass.StatusOutput("Running...", Color.orange);
 			if (functionMode.contains("1") == true) {
 				// if inputData == null and inputDataDir != null, read all image files in that immediate directory
+				UtilClass.DebugOutput("Starting task 01...");
 				if (task01images.length()>0 && task01imagesDir.length()>0) {
+					UtilClass.DebugOutput("Reading image input...");
 					int task01imagesNum = Integer.parseInt(task01images.replace("|", ""));
 					int task01imagesDirNum = Integer.parseInt(task01imagesDir.replace("|", ""));
 					if ((task01input[task01imagesNum] == null || task01input[task01imagesNum].length == 0) && (task01input[task01imagesDirNum] != null)) {
@@ -1427,6 +1525,9 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
 							}
 						}	
 					}
+				} else {
+					task01images = "-1";
+					task01imagesDir = "-1";
 				}
 				if (printParam == true) {
 					UtilClass.DebugOutput("****These are the recognized input parameters (if not specified by the user, these are the defaults).****");
@@ -1458,12 +1559,30 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
 				thisManager.task01cmd = task01cmd;
 				thisManager.task01input = task01input;
 				thisManager.task01images = Integer.parseInt(task01images.replace("|", ""));
-				if (resultStatus != -1) {
-					resultStatus = thisManager.Initialize_Start();
+				thisManager.task01imagesDir = Integer.parseInt(task01imagesDir.replace("|", ""));
+				UtilClass.DebugOutput("Begin running...");
+				if (resultStatus >= 0) {
+					//resultStatus = thisManager.Initialize_Start();
+					if (thisManager.task01images == -1 && thisManager.task01imagesDir == -1) {
+						resultStatus = thisManager.RunTask01SingleThread();
+					} else {
+						resultStatus = thisManager.RunTask01();
+					}
+					UtilClass.DebugOutput("ResultStatus = " + resultStatus);
 				} else {
-					thisManager.Initialize_Start();
+					//thisManager.Initialize_Start();
+					/*if (thisManager.task01images == -1 && thisManager.task01imagesDir == -1) {
+						thisManager.RunTask01SingleThread();
+					} else {
+						thisManager.RunTask01();
+					}*/
 				}
 			}
+			/*if (cancelRequest == 1) {
+				UtilClass.DebugOutput("Requested to cancel. Do not proceed to next process.");
+				cancelRequest = 0;
+				return -2;
+			}*/
 			if (functionMode.contains("2") == true) {
 				if (task02images.length()>0 && task02imagesDir.length()>0) {
 					int task02imagesNum = Integer.parseInt(task02images.replace("|", ""));
@@ -1492,6 +1611,9 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
 							}
 						}	
 					}
+				} else {
+					task02images = "-1";
+					task02imagesDir = "-1";
 				}
 				if (printParam == true) {
 					UtilClass.DebugOutput("****These are the recognized input parameters (if not specified by the user, these are the defaults).****");
@@ -1522,17 +1644,33 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
 				thisManager.task02input = task02input;
 				thisManager.task02images = Integer.parseInt(task02images.replace("|", ""));
 				thisManager.task02imagesDir = Integer.parseInt(task02imagesDir.replace("|", ""));
-				if (resultStatus != -1) {
-					resultStatus = thisManager.ImageJ_StartJobs();
+				if (resultStatus >= 0) {
+					//resultStatus = thisManager.ImageJ_StartJobs();
+					if (thisManager.task02images == -1 && thisManager.task02imagesDir == -1) {
+						resultStatus = thisManager.RunTask02SingleThread();
+					} else {
+						resultStatus = thisManager.RunTask02();
+					}
+					UtilClass.DebugOutput("ResultStatus = " + resultStatus);
 				} else {
-					thisManager.ImageJ_StartJobs();
+					//thisManager.ImageJ_StartJobs();
+					/*if (thisManager.task02images == -1 && thisManager.task02imagesDir == -1) {
+						thisManager.RunTask02SingleThread();
+					} else {
+						thisManager.RunTask02();
+					}*/
 				}
 			} 
+			/*if (cancelRequest == 1) {
+				UtilClass.DebugOutput("Requested to cancel. Do not proceed to next process.");
+				cancelRequest = 0;
+				return -2;
+			}*/
 			if (functionMode.contains("3") == true) {
-				if (resultStatus != -1) {
+				if (resultStatus >= 0) {
 					resultStatus = thisManager.CombineCSV_Start();
 				} else {
-					thisManager.CombineCSV_Start();
+					//thisManager.CombineCSV_Start();
 				}
 				
 			}
@@ -1545,9 +1683,14 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
 				UtilClass.StatusOutput("Failed!",Color.RED);
 			} else if (resultStatus == 1) {
 				UtilClass.StatusOutput("Success!",Color.GREEN);
+			} else if (resultStatus == -2) {
+				UtilClass.StatusOutput("Cancelation complete.", Color.GRAY);
 			} else {
-				UtilClass.StatusOutput("Uncertain status.",Color.DARK_GRAY);
+				UtilClass.StatusOutput("Uncertain status.",Color.GRAY);
 			}
+			
+			cancelRequest = 0;
+			currentlyRunning = 0;
 			
 			return 0;
 		}
@@ -1710,6 +1853,13 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
 		UtilClass.DebugOutput("Finished, closed.");*/
     }
     
+    private void Cancel() {
+    	UtilClass.DebugOutput("CANCEL REQUESTED, pending...");
+    	cancelRequest = 1;
+    	thisManager.CancelTasks();
+    	//UtilClass.DebugOutput("CANCEL COMPLETED.");
+    }
+    
     public void ClearOutput() {
     	jtextarea_debug.setText("");
     	jlabel_status.setText("not running.");
@@ -1745,20 +1895,28 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
 
     	ImageJ_Jobs_GUI thisGUI;
     	thisGUI = new ImageJ_Jobs_GUI();
-    	if (thisGUI.thisManager == null) {
-    		thisGUI.thisManager = new ImageJ_Manager();
+    	thisGUI.StartGUI();
+
+    }
+    
+    public void StartGUI() {
+    	
+    	initComponents();
+    	
+    	if (thisManager == null) {
+    		thisManager = new ImageJ_Manager();
     	}
     	
     	
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-            	UtilClass.jtextarea_debug = thisGUI.jtextarea_debug;
-            	UtilClass.jlabel_status = thisGUI.jlabel_status;
-            	UtilClass.jpanel_status = thisGUI.jpanel_status;
+            	UtilClass.jtextarea_debug = jtextarea_debug;
+            	UtilClass.jlabel_status = jlabel_status;
+            	UtilClass.jpanel_status = jpanel_status;
             	UtilClass.gui = true;
-                thisGUI.setVisible(true);
-                thisGUI.ClearOutput();
+                setVisible(true);
+                ClearOutput();
             }
         });
     }
@@ -1843,6 +2001,7 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
     private javax.swing.JTextField jTF_task02threads;
     private javax.swing.JTextField jTF_task02timeout;
     private javax.swing.JButton jbutton_execute;
+    private javax.swing.JButton jbutton_cancel;
     private javax.swing.JCheckBox jcheckbox_task1;
     private javax.swing.JCheckBox jcheckbox_task2;
     private javax.swing.JCheckBox jcheckbox_task3;
@@ -1850,5 +2009,8 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
     private javax.swing.JLabel jlabel_status;
     private javax.swing.JPanel jpanel_status;
     private javax.swing.JTextArea jtextarea_debug;
+    
+    // cancelRequest: 0 = not requested, 1 = requested to cancel
+    public int cancelRequest = 0;
     // End of variables declaration                   
 }
