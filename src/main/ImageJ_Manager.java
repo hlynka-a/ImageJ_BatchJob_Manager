@@ -12,8 +12,11 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -533,6 +536,16 @@ public class ImageJ_Manager {
 	int task02images = -1;
 	int task02imagesDir = -1;
 	// why not provide an option for the user to specify the entire command to launch ImageJ? Because we want to be able to handle parallel jobs, the user would have to write out every command for every job
+	
+	//Start work for generalizing tasks
+	List<String> taskDescriptions = new ArrayList<String>(Arrays.asList(task01description, task02description));
+	List<Integer> taskMaxThreads = new ArrayList<Integer>(Arrays.asList(task01maxThreads, task02maxThreads));
+	List<Integer> taskTimeouts = new ArrayList<Integer>(Arrays.asList(task01timeout, task02timeout));
+	List<Integer> taskRetryFails = new ArrayList<Integer>(Arrays.asList(task01retryFails, task02retryFails));
+	List<String> taskCommands = new ArrayList<String>(Arrays.asList(task01cmd, task02cmd));
+	List<String[][]> taskInputs = new ArrayList<String[][]>(Arrays.asList(task01input, task02input));
+	List<Integer> taskImages = new ArrayList<Integer>(Arrays.asList(task01images, task02images));
+	List<Integer> taskImagesDirs = new ArrayList<Integer>(Arrays.asList(task01imagesDir, task02imagesDir));
 	
 	long startExecutionTime = 0;
 	
