@@ -549,6 +549,35 @@ public class ImageJ_Manager {
 	
 	long startExecutionTime = 0;
 	
+	public void modifyCancelRequest(int taskNumber) {
+		UtilClass.DebugOutput("CANCEL requested during Task " + taskNumber + ", canceling further executions.");
+		cancelRequest = 0;
+	}
+	
+	public void cancelProcessThreads(int taskInputImageLength) {
+		for (int i = 0; i < taskInputImageLength; i++) {
+			processThreads[i].Cancel();
+		}
+	}
+	
+	public int debugSuccessFailOutput(int failedRuns, int taskInputImageLength, boolean[] threadSuccess) {
+		for (int i = 0; i < taskInputImageLength; i++)
+		{
+			UtilClass.DebugOutputNoLine("Thread " + (i+1) + " : ");
+			if (threadSuccess[i] == true) {
+				UtilClass.DebugOutputNoLine("SUCCESS");
+			} else {
+				UtilClass.DebugOutputNoLine("FAIL");
+				failedRuns++;
+			}
+			UtilClass.DebugOutputNoLine(", \t");
+			if (i % 3 == 2) {
+				UtilClass.DebugOutputNoLine("\n");
+			}
+		}
+		return failedRuns;
+	}
+	
 	public int RunGenericTask(int taskNumber) {
 		
 		int taskIndex = taskNumber - 1;
@@ -602,8 +631,7 @@ public class ImageJ_Manager {
 		}
 		
 		if (cancelRequest == 1) {
-			UtilClass.DebugOutput("CANCEL requested during Task " + taskNumber + ", canceling further executions.");
-			cancelRequest = 0;
+			modifyCancelRequest(taskNumber);
 			return -2;
 		}
 		
@@ -616,11 +644,8 @@ public class ImageJ_Manager {
 		execService.shutdown();
 		try {
 			if (cancelRequest == 1) {
-				UtilClass.DebugOutput("CANCEL requested during Task " + taskNumber + ", canceling further executions.");
-				cancelRequest = 0;
-				for (int i = 0; i < taskInputImageLength; i++) {
-					processThreads[i].Cancel();
-				}
+				modifyCancelRequest(taskNumber);
+				cancelProcessThreads(taskInputImageLength);
 				return -2;
 			}
 			execService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
@@ -658,20 +683,9 @@ public class ImageJ_Manager {
 		UtilClass.DebugOutput("Max execution time for successful threads (seconds): " + String.format("%.0f", maxSeconds));
 		UtilClass.DebugOutputNoLine("\n");
 		int failedRuns = 0;
-		for (int i = 0; i < taskInputImageLength; i++)
-		{
-			UtilClass.DebugOutputNoLine("Thread " + (i+1) + " : ");
-			if (threadSuccess[i] == true) {
-				UtilClass.DebugOutputNoLine("SUCCESS");
-			} else {
-				UtilClass.DebugOutputNoLine("FAIL");
-				failedRuns++;
-			}
-			UtilClass.DebugOutputNoLine(", \t");
-			if (i % 3 == 2) {
-				UtilClass.DebugOutputNoLine("\n");
-			}
-		}
+		
+		failedRuns = debugSuccessFailOutput(failedRuns, taskInputImageLength, threadSuccess);
+				
 		UtilClass.DebugOutput("\n");
 		
 		while (taskRetryFail > 0 && failedRuns > 0) {
@@ -680,8 +694,7 @@ public class ImageJ_Manager {
 			failedRuns = 0;
 			
 			if (cancelRequest == 1) {
-				UtilClass.DebugOutput("CANCEL requested during Task " + taskNumber + ", canceling further executions.");
-				cancelRequest = 0;
+				modifyCancelRequest(taskNumber);
 				return -2;
 			}
 			
@@ -699,11 +712,8 @@ public class ImageJ_Manager {
 			try {
 				execService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
 				if (cancelRequest == 1) {
-					UtilClass.DebugOutput("CANCEL requested during Task " + taskNumber + ", canceling further executions.");
-					cancelRequest = 0;
-					for (int i = 0; i < taskInputImageLength; i++) {
-						processThreads[i].Cancel();
-					}
+					modifyCancelRequest(taskNumber);
+					cancelProcessThreads(taskInputImageLength);
 					return -2;
 				}
 			} catch (InterruptedException e) {
@@ -721,20 +731,9 @@ public class ImageJ_Manager {
 			totalSeconds = (System.nanoTime() - startTime)*0.000000001f;
 			UtilClass.DebugOutput("Total execution time (seconds): " + String.format("%.0f",totalSeconds) + "   |   (minutes): " + String.format("%.2f",(totalSeconds/60f)));
 			UtilClass.DebugOutputNoLine("\n");
-			for (int i = 0; i < taskInputImageLength; i++)
-			{
-				UtilClass.DebugOutputNoLine("Thread " + (i+1) + " : ");
-				if (threadSuccess[i] == true) {
-					UtilClass.DebugOutputNoLine("SUCCESS");
-				} else {
-					UtilClass.DebugOutputNoLine("FAIL");
-					failedRuns++;
-				}
-				UtilClass.DebugOutputNoLine(", \t");
-				if (i % 3 == 2) {
-					UtilClass.DebugOutputNoLine("\n");
-				}
-			}
+			
+			failedRuns = debugSuccessFailOutput(failedRuns, taskInputImageLength, threadSuccess);
+			
 			UtilClass.DebugOutput("\n");
 		}
 		
