@@ -537,15 +537,27 @@ public class ImageJ_Manager {
 	int task02imagesDir = -1;
 	// why not provide an option for the user to specify the entire command to launch ImageJ? Because we want to be able to handle parallel jobs, the user would have to write out every command for every job
 	
-	//Start work for generalizing tasks
-	List<String> taskDescriptions = new ArrayList<String>(Arrays.asList(task01description, task02description));
-	List<Integer> taskMaxThreads = new ArrayList<Integer>(Arrays.asList(task01maxThreads, task02maxThreads));
-	List<Integer> taskTimeouts = new ArrayList<Integer>(Arrays.asList(task01timeout, task02timeout));
-	List<Integer> taskRetryFails = new ArrayList<Integer>(Arrays.asList(task01retryFails, task02retryFails));
-	List<String> taskCommands = new ArrayList<String>(Arrays.asList(task01cmd, task02cmd));
-	List<String[][]> taskInputs = new ArrayList<String[][]>(Arrays.asList(task01input, task02input));
-	List<Integer> taskImages = new ArrayList<Integer>(Arrays.asList(task01images, task02images));
-	List<Integer> taskImagesDirs = new ArrayList<Integer>(Arrays.asList(task01imagesDir, task02imagesDir));
+	//create lists but don't populate yet
+	List<String> taskDescriptions = new ArrayList<String>();
+	List<Integer> taskMaxThreads = new ArrayList<Integer>();
+	List<Integer> taskTimeouts = new ArrayList<Integer>();
+	List<Integer> taskRetryFails = new ArrayList<Integer>();
+	List<String> taskCommands = new ArrayList<String>();
+	List<String[][]> taskInputs = new ArrayList<String[][]>();
+	List<Integer> taskImages = new ArrayList<Integer>();
+	List<Integer> taskImagesDirs = new ArrayList<Integer>();
+	
+	public void populateListsFromGUI() {
+		//Start work for generalizing tasks
+		taskDescriptions = new ArrayList<String>(Arrays.asList(task01description, task02description));
+		taskMaxThreads = new ArrayList<Integer>(Arrays.asList(task01maxThreads, task02maxThreads));
+		taskTimeouts = new ArrayList<Integer>(Arrays.asList(task01timeout, task02timeout));
+		taskRetryFails = new ArrayList<Integer>(Arrays.asList(task01retryFails, task02retryFails));
+		taskCommands = new ArrayList<String>(Arrays.asList(task01cmd, task02cmd));
+		taskInputs = new ArrayList<String[][]>(Arrays.asList(task01input, task02input));
+		taskImages = new ArrayList<Integer>(Arrays.asList(task01images, task02images));
+		taskImagesDirs = new ArrayList<Integer>(Arrays.asList(task01imagesDir, task02imagesDir));
+	}
 	
 	long startExecutionTime = 0;
 	
@@ -578,7 +590,10 @@ public class ImageJ_Manager {
 		return failedRuns;
 	}
 	
-	public int RunGenericTask(int taskNumber) {
+	public int RunGenericTask(int taskNumber, boolean singleThread) {
+		
+		//get info from GUI
+		populateListsFromGUI();
 		
 		int taskIndex = taskNumber - 1;
 		//Get all the variables relevant to this task
@@ -590,7 +605,11 @@ public class ImageJ_Manager {
 		String[][]taskInput = taskInputs.get(taskIndex);
 		int taskImage = taskImages.get(taskIndex);
 		int taskImagesDir = taskImagesDirs.get(taskIndex);
-		int taskInputImageLength = taskInput[taskImage].length;
+		
+		int taskInputImageLength = 1;
+		if(singleThread == false) {
+			taskInputImageLength = taskInput[taskImage].length;
+		}
 		
 		UtilClass.DebugOutput("TASK " + taskNumber + ":");
 		
@@ -625,7 +644,9 @@ public class ImageJ_Manager {
 					sysCommand = sysCommand.replace("||" + j + "||", taskInput[j][0]);
 				}
 			}
-			sysCommand = sysCommand.replace("||" + taskImage + "||", taskInput[taskImage][i]);
+			if(singleThread == false) {
+				sysCommand = sysCommand.replace("||" + taskImage + "||", taskInput[taskImage][i]);
+			}
 			processThreads[i].sysCommand = sysCommand;
 			processThreads[i].milisecondsTimeout = taskTimeout;
 		}
@@ -643,6 +664,9 @@ public class ImageJ_Manager {
 		UtilClass.DebugOutput("");
 		execService.shutdown();
 		try {
+			if(singleThread) {
+				execService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+			}
 			if (cancelRequest == 1) {
 				modifyCancelRequest(taskNumber);
 				cancelProcessThreads(taskInputImageLength);
@@ -1400,10 +1424,10 @@ public class ImageJ_Manager {
 		execService = Executors.newFixedThreadPool(task01maxThreads);
 		processThreads = new ImageJ_Thread[1];
 				
-		for (int i = 0; i < 1; i++) {
+		for (int i = 0; i < 1; i++) {	//set taskInputImageLength to 1 and use same variable
 			processThreads[i] = new ImageJ_Thread();
 			processThreads[i].threadIndex = i + 1;
-			processThreads[i].threadTotal = 1;
+			processThreads[i].threadTotal = 1;	//taskInputImageLength
 			String sysCommand = task01cmd;
 			for (int j = 0; j < 10; j++) {
 				if (j != task01images && task01input[j] != null) {
