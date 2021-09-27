@@ -12,8 +12,11 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -534,7 +537,239 @@ public class ImageJ_Manager {
 	int task02imagesDir = -1;
 	// why not provide an option for the user to specify the entire command to launch ImageJ? Because we want to be able to handle parallel jobs, the user would have to write out every command for every job
 	
+	//create lists but don't populate yet
+	List<String> taskDescriptions = new ArrayList<String>();
+	List<Integer> taskMaxThreads = new ArrayList<Integer>();
+	List<Integer> taskTimeouts = new ArrayList<Integer>();
+	List<Integer> taskRetryFails = new ArrayList<Integer>();
+	List<String> taskCommands = new ArrayList<String>();
+	List<String[][]> taskInputs = new ArrayList<String[][]>();
+	List<Integer> taskImages = new ArrayList<Integer>();
+	List<Integer> taskImagesDirs = new ArrayList<Integer>();
+	
+	public void populateListsFromGUI() {
+		//Start work for generalizing tasks
+		taskDescriptions = new ArrayList<String>(Arrays.asList(task01description, task02description));
+		taskMaxThreads = new ArrayList<Integer>(Arrays.asList(task01maxThreads, task02maxThreads));
+		taskTimeouts = new ArrayList<Integer>(Arrays.asList(task01timeout, task02timeout));
+		taskRetryFails = new ArrayList<Integer>(Arrays.asList(task01retryFails, task02retryFails));
+		taskCommands = new ArrayList<String>(Arrays.asList(task01cmd, task02cmd));
+		taskInputs = new ArrayList<String[][]>(Arrays.asList(task01input, task02input));
+		taskImages = new ArrayList<Integer>(Arrays.asList(task01images, task02images));
+		taskImagesDirs = new ArrayList<Integer>(Arrays.asList(task01imagesDir, task02imagesDir));
+	}
+	
 	long startExecutionTime = 0;
+	
+	public void modifyCancelRequest(int taskNumber) {
+		UtilClass.DebugOutput("CANCEL requested during Task " + taskNumber + ", canceling further executions.");
+		cancelRequest = 0;
+	}
+	
+	public void cancelProcessThreads(int taskInputImageLength) {
+		for (int i = 0; i < taskInputImageLength; i++) {
+			processThreads[i].Cancel();
+		}
+	}
+	
+	public int debugSuccessFailOutput(int failedRuns, int taskInputImageLength, boolean[] threadSuccess) {
+		for (int i = 0; i < taskInputImageLength; i++)
+		{
+			UtilClass.DebugOutputNoLine("Thread " + (i+1) + " : ");
+			if (threadSuccess[i] == true) {
+				UtilClass.DebugOutputNoLine("SUCCESS");
+			} else {
+				UtilClass.DebugOutputNoLine("FAIL");
+				failedRuns++;
+			}
+			UtilClass.DebugOutputNoLine(", \t");
+			if (i % 3 == 2) {
+				UtilClass.DebugOutputNoLine("\n");
+			}
+		}
+		return failedRuns;
+	}
+	
+	public int RunGenericTask(int taskNumber, boolean singleThread) {
+		
+		//get info from GUI
+		populateListsFromGUI();
+		
+		int taskIndex = taskNumber - 1;
+		//Get all the variables relevant to this task
+		String taskDescription = taskDescriptions.get(taskIndex);
+		int taskMaxThreadCount = taskMaxThreads.get(taskIndex);
+		int taskTimeout = taskTimeouts.get(taskIndex);
+		int taskRetryFail = taskRetryFails.get(taskIndex);
+		String taskCmd = taskCommands.get(taskIndex);
+		String[][]taskInput = taskInputs.get(taskIndex);
+		int taskImage = taskImages.get(taskIndex);
+		int taskImagesDir = taskImagesDirs.get(taskIndex);
+		
+		int taskInputImageLength = 1;
+		if(singleThread == false) {
+			taskInputImageLength = taskInput[taskImage].length;
+		}
+		
+		UtilClass.DebugOutput("TASK " + taskNumber + ":");
+		
+		UtilClass.DebugOutput(taskDescription);
+		
+		UtilClass.DebugOutput("System OS: " + System.getProperty("os.name"));
+		UtilClass.DebugOutput("Total number of system cores: " + Runtime.getRuntime().availableProcessors());
+		UtilClass.DebugOutput("Total amount of JVM memory (GB): " + String.format("%.4f",Runtime.getRuntime().totalMemory()*0.001f*0.001f*0.001f));
+		
+		UtilClass.DebugOutput("Set to run this many concurrent threads: " + taskMaxThreadCount);
+		UtilClass.DebugOutput("Defined timeout time (seconds): " + taskTimeout*0.001f);
+		
+		long startTime = System.nanoTime();
+		startExecutionTime = System.currentTimeMillis();
+		
+		
+		
+		
+		
+		boolean[] threadSuccess = new boolean[taskInputImageLength];
+		
+		execService = Executors.newFixedThreadPool(taskMaxThreadCount);
+		processThreads = new ImageJ_Thread[taskInputImageLength];
+		
+		for (int i = 0; i < taskInputImageLength; i++) {
+			processThreads[i] = new ImageJ_Thread();
+			processThreads[i].threadIndex = i + 1;
+			processThreads[i].threadTotal = taskInputImageLength;
+			String sysCommand = taskCmd;
+			for (int j = 0; j < 10; j++) {
+				if (j != taskImage && taskInput[j] != null) {
+					sysCommand = sysCommand.replace("||" + j + "||", taskInput[j][0]);
+				}
+			}
+			if(singleThread == false) {
+				sysCommand = sysCommand.replace("||" + taskImage + "||", taskInput[taskImage][i]);
+			}
+			processThreads[i].sysCommand = sysCommand;
+			processThreads[i].milisecondsTimeout = taskTimeout;
+		}
+		
+		if (cancelRequest == 1) {
+			modifyCancelRequest(taskNumber);
+			return -2;
+		}
+		
+		for (int i = 0; i < taskInputImageLength; i++) {
+			execService.execute(processThreads[i]);
+		}
+		
+		UtilClass.DebugOutput("Waiting for threads to finish...");
+		UtilClass.DebugOutput("");
+		execService.shutdown();
+		try {
+			if(singleThread) {
+				execService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+			}
+			if (cancelRequest == 1) {
+				modifyCancelRequest(taskNumber);
+				cancelProcessThreads(taskInputImageLength);
+				return -2;
+			}
+			execService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		execService.shutdownNow();
+		double avgSeconds = 0;
+		int avgSuccessThreads = 0;
+		double maxSeconds = 0;
+		for (int i = 0; i < taskInputImageLength; i++) {
+			threadSuccess[i] = !processThreads[i].forcedClosed;
+			// (compare time in seconds)
+			if (processThreads[i].timeFinished < (taskTimeout*0.001f) - 1) {
+				avgSeconds += processThreads[i].timeFinished;
+				avgSuccessThreads++;
+				
+				if (processThreads[i].timeFinished > maxSeconds) {
+					maxSeconds = processThreads[i].timeFinished;
+				}
+			}
+		}
+		if (avgSuccessThreads > 0) {
+			avgSeconds = avgSeconds / avgSuccessThreads;
+		} else {
+			avgSeconds = -1;
+		}
+		
+		UtilClass.DebugOutput("");
+		UtilClass.DebugOutput("All threads finished.");
+		double totalSeconds = (System.nanoTime() - startTime)*0.000000001f;
+		UtilClass.DebugOutput("Total execution time (seconds): " + String.format("%.0f",totalSeconds) + "   |   (minutes): " + String.format("%.2f",(totalSeconds/60f)));
+		UtilClass.DebugOutput("Average execution time for successful threads (seconds): " + String.format("%.0f", avgSeconds));
+		UtilClass.DebugOutput("Max execution time for successful threads (seconds): " + String.format("%.0f", maxSeconds));
+		UtilClass.DebugOutputNoLine("\n");
+		int failedRuns = 0;
+		
+		failedRuns = debugSuccessFailOutput(failedRuns, taskInputImageLength, threadSuccess);
+				
+		UtilClass.DebugOutput("\n");
+		
+		while (taskRetryFail > 0 && failedRuns > 0) {
+			UtilClass.DebugOutput("Retry allowed for failed threads. Retries left: " + taskRetryFail);
+			taskRetryFail--;
+			failedRuns = 0;
+			
+			if (cancelRequest == 1) {
+				modifyCancelRequest(taskNumber);
+				return -2;
+			}
+			
+			execService = Executors.newFixedThreadPool(taskMaxThreadCount);
+			
+			for (int i = 0; i < taskInputImageLength; i++) {
+				if (processThreads[i].forcedClosed == true) {
+					execService.execute(processThreads[i]);
+				}
+			}
+			
+			UtilClass.DebugOutput("Waiting for threads to finish...");
+			UtilClass.DebugOutput("");
+			execService.shutdown();
+			try {
+				execService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+				if (cancelRequest == 1) {
+					modifyCancelRequest(taskNumber);
+					cancelProcessThreads(taskInputImageLength);
+					return -2;
+				}
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			execService.shutdownNow();
+			
+			for (int i = 0; i < taskInputImageLength; i++) {
+				threadSuccess[i] = !processThreads[i].forcedClosed;
+			}
+			
+			UtilClass.DebugOutput("");
+			UtilClass.DebugOutput("All threads finished.");
+			totalSeconds = (System.nanoTime() - startTime)*0.000000001f;
+			UtilClass.DebugOutput("Total execution time (seconds): " + String.format("%.0f",totalSeconds) + "   |   (minutes): " + String.format("%.2f",(totalSeconds/60f)));
+			UtilClass.DebugOutputNoLine("\n");
+			
+			failedRuns = debugSuccessFailOutput(failedRuns, taskInputImageLength, threadSuccess);
+			
+			UtilClass.DebugOutput("\n");
+		}
+		
+		UtilClass.DebugOutput("Finished Task " + taskNumber + ".");
+		UtilClass.DebugOutput("---\n\n");
+		
+		if (failedRuns > 0)
+			return -1;
+		else
+			return 1;
+
+	}
 	
 	//public int ImageJ_StartJobs() {
 	public int RunTask02() {
@@ -1189,10 +1424,10 @@ public class ImageJ_Manager {
 		execService = Executors.newFixedThreadPool(task01maxThreads);
 		processThreads = new ImageJ_Thread[1];
 				
-		for (int i = 0; i < 1; i++) {
+		for (int i = 0; i < 1; i++) {	//set taskInputImageLength to 1 and use same variable
 			processThreads[i] = new ImageJ_Thread();
 			processThreads[i].threadIndex = i + 1;
-			processThreads[i].threadTotal = 1;
+			processThreads[i].threadTotal = 1;	//taskInputImageLength
 			String sysCommand = task01cmd;
 			for (int j = 0; j < 10; j++) {
 				if (j != task01images && task01input[j] != null) {
