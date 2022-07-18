@@ -204,6 +204,7 @@ public class ImageJ_Manager {
 				} else if (args[i].toLowerCase().contains("--task02cmd") == true) {
 					task02cmd = thisManager.ImageJ_ReadParameter("--task02cmd=",args[i],0);
 				} else if (args[i].toLowerCase().contains("--task02input01") == true) {
+					UtilClass.DebugOutput("Found task02input01");
 					task02input[1] = thisManager.ImageJ_ReadParameterArray("--task02input01=",args[i]);
 				} else if (args[i].toLowerCase().contains("--task02input02") == true) {
 					task02input[2] = thisManager.ImageJ_ReadParameterArray("--task02input02=", args[i]);
@@ -503,6 +504,10 @@ public class ImageJ_Manager {
 		} catch (Exception e) {
 			UtilClass.DebugOutput("ERROR: Input parameter ' " + removeString + " ' recognized, but issue parsing out value.");
 			e.printStackTrace();
+		}
+		UtilClass.DebugOutput(">>>> read parameter -> " + removeString + " = ");
+		for(int i=0; i < returnValue.length; i++) {
+			UtilClass.DebugOutput("\t" + returnValue[i]);
 		}
 		return returnValue;
 	}
