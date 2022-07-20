@@ -16,41 +16,47 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class ImageJ_Manager {
+	
+	// input parameters the user can define, to be passed to instance of program
+	String paramFile = null;	//filepath
+	boolean gui = true;
+	boolean printParam = false;
+	String functionMode = "1";		// example: 12	=> task 1 and task 2, in this order
+	List<String> functionModeList = new ArrayList<String>();
+	List<Task> tasks = new ArrayList<Task>();
+	int task01maxThreads = 4;
+	int task01timeout = 60000;
+	int task01retryFails = 2;
+	String task01cmd = "";
+	String [][] task01input = new String[10][];
+	String task01imagesDir = "-1";
+	String task01images = "-1";
+	String task01description = "(Task 01, written to do stuff.)";
+	
+	int task02maxThreads = 4;
+	int task02timeout = 60000;
+	int task02retryFails = 2;
+	String task02cmd = "";
+	String[][] task02input = new String[10][];
+	String task02imagesDir = "-1";
+	String task02images = "-1";
+	String task02description = "(Task 02, written to do stuff.)";
+	
+	static ImageJ_Manager thisManager = new ImageJ_Manager();
+	
 
 	public static void main (String[] args) {
 		
-		// input parameters the user can define, to be passed to instance of program
-		String paramFile = null;	//filepath
-		boolean gui = true;
-		boolean printParam = false;
-		String functionMode = "1";		// example: 12	=> task 1 and task 2, in this order
-
-		int task01maxThreads = 4;
-		int task01timeout = 60000;
-		int task01retryFails = 2;
-		String task01cmd = "";
-		String [][] task01input = new String[10][];
-		String task01imagesDir = "-1";
-		String task01images = "-1";
-		String task01description = "(Task 01, written to do stuff.)";
 		
-		int task02maxThreads = 4;
-		int task02timeout = 60000;
-		int task02retryFails = 2;
-		String task02cmd = "";
-		String[][] task02input = new String[10][];
-		String task02imagesDir = "-1";
-		String task02images = "-1";
-		String task02description = "(Task 02, written to do stuff.)";
-		
-		ImageJ_Manager thisManager = new ImageJ_Manager();
 		
 		if (args != null && args.length != 0) {
 			for (int i = 0; i < args.length; i++) {
@@ -73,79 +79,12 @@ public class ImageJ_Manager {
 						inputArg = inputArg.toLowerCase().replace("--paramfile=", "");
 						File inputFile = new File(inputArg);
 						Scanner readFile = new Scanner(inputFile);
+						List<String> allArgs = new ArrayList<String>();
 						while (readFile.hasNextLine()) {
 							String argsLine = readFile.nextLine();
-							if (argsLine.toLowerCase().contains("--gui") == true) {
-								gui = Boolean.parseBoolean(thisManager.ImageJ_ReadParameter("--gui=",argsLine,2));
-							} else if (argsLine.toLowerCase().contains("--functionmode") == true) {
-								functionMode = thisManager.ImageJ_ReadParameter("--functionmode=",argsLine,0);
-							} else if (argsLine.toLowerCase().contains("--task01description") == true) {
-								task01description = thisManager.ImageJ_ReadParameter("--task01description=",argsLine,0);
-							} else if (argsLine.toLowerCase().contains("--task01maxthreads") == true) {
-								task01maxThreads = Integer.parseInt(thisManager.ImageJ_ReadParameter("--task01maxthreads=",argsLine,1));
-							} else if (argsLine.toLowerCase().contains("--task01timeout") == true) {
-								task01timeout = Integer.parseInt(thisManager.ImageJ_ReadParameter("--task01timeout=",argsLine,1));
-							} else if (argsLine.toLowerCase().contains("--task01retryfails") == true) {
-								task01retryFails = Integer.parseInt(thisManager.ImageJ_ReadParameter("--task01retryfails=",argsLine,1));
-							} else if (argsLine.toLowerCase().contains("--task01cmd") == true) {
-								task01cmd = thisManager.ImageJ_ReadParameter("--task01cmd=",argsLine,0);
-							} else if (argsLine.toLowerCase().contains("--task01input01") == true) {
-								task01input[1] = thisManager.ImageJ_ReadParameterArray("--task01input01=", argsLine);
-							} else if (argsLine.toLowerCase().contains("--task01input02") == true) {
-								task01input[2] = thisManager.ImageJ_ReadParameterArray("--task01input02=", argsLine);
-							} else if (argsLine.toLowerCase().contains("--task01input03") == true) {
-								task01input[3] = thisManager.ImageJ_ReadParameterArray("--task01input03=", argsLine);
-							} else if (argsLine.toLowerCase().contains("--task01input04") == true) {
-								task01input[4] = thisManager.ImageJ_ReadParameterArray("--task01input04=", argsLine);
-							} else if (argsLine.toLowerCase().contains("--task01input05") == true) {
-								task01input[5] = thisManager.ImageJ_ReadParameterArray("--task01input05=", argsLine);
-							} else if (argsLine.toLowerCase().contains("--task01input06") == true) {
-								task01input[6] = thisManager.ImageJ_ReadParameterArray("--task01input06=", argsLine);
-							} else if (argsLine.toLowerCase().contains("--task01input07") == true) {
-								task01input[7] = thisManager.ImageJ_ReadParameterArray("--task01input07=", argsLine);
-							} else if (argsLine.toLowerCase().contains("--task01input08") == true) {
-								task01input[8] = thisManager.ImageJ_ReadParameterArray("--task01input08=", argsLine);
-							} else if (argsLine.toLowerCase().contains("--task01input09") == true) {
-								task01input[9] = thisManager.ImageJ_ReadParameterArray("--task01input09=", argsLine);
-							} else if (argsLine.toLowerCase().contains("--task01imagesdir") == true) {
-								task01imagesDir = thisManager.ImageJ_ReadParameter("--task01imagesdir=",argsLine,0);
-							} else if (argsLine.toLowerCase().contains("--task01images") == true) {
-								task01images = thisManager.ImageJ_ReadParameter("--task01images=",argsLine,0);
-							} else if (argsLine.toLowerCase().contains("--task02description") == true) {
-								task02description = thisManager.ImageJ_ReadParameter("--task02description=",argsLine,0); 
-							} else if (argsLine.toLowerCase().contains("--task02maxthreads") == true) {
-								task02maxThreads = Integer.parseInt(thisManager.ImageJ_ReadParameter("--task02maxthreads=",argsLine,1));
-							} else if (argsLine.toLowerCase().contains("--task02timeout") == true) {
-								task02timeout = Integer.parseInt(thisManager.ImageJ_ReadParameter("--task02timeout=",argsLine,1));
-							} else if (argsLine.toLowerCase().contains("--task02retryfails") == true) {
-								task02retryFails = Integer.parseInt(thisManager.ImageJ_ReadParameter("--task02retryfails=",argsLine,1));
-							} else if (argsLine.toLowerCase().contains("--task02cmd") == true) {
-								task02cmd = thisManager.ImageJ_ReadParameter("--task02cmd=",argsLine,0);
-							} else if (argsLine.toLowerCase().contains("--task02input01") == true) {
-								task02input[1] = thisManager.ImageJ_ReadParameterArray("--task02input01=", argsLine);
-							} else if (argsLine.toLowerCase().contains("--task02input02") == true) {
-								task02input[2] = thisManager.ImageJ_ReadParameterArray("--task02input02=", argsLine);
-							} else if (argsLine.toLowerCase().contains("--task02input03") == true) {
-								task02input[3] = thisManager.ImageJ_ReadParameterArray("--task02input03=", argsLine);
-							} else if (argsLine.toLowerCase().contains("--task02input04") == true) {
-								task02input[4] = thisManager.ImageJ_ReadParameterArray("--task02input04=", argsLine);
-							} else if (argsLine.toLowerCase().contains("--task02input05") == true) {
-								task02input[5] = thisManager.ImageJ_ReadParameterArray("--task02input05=", argsLine);
-							} else if (argsLine.toLowerCase().contains("--task02input06") == true) {
-								task02input[6] = thisManager.ImageJ_ReadParameterArray("--task02input06=", argsLine);
-							} else if (argsLine.toLowerCase().contains("--task02input07") == true) {
-								task02input[7] = thisManager.ImageJ_ReadParameterArray("--task02input07=", argsLine);
-							} else if (argsLine.toLowerCase().contains("--task02input08") == true) {
-								task02input[8] = thisManager.ImageJ_ReadParameterArray("--task02input08=", argsLine);
-							} else if (argsLine.toLowerCase().contains("--task02input09") == true) {
-								task02input[9] = thisManager.ImageJ_ReadParameterArray("--task02input09=", argsLine);
-							} else if (argsLine.toLowerCase().contains("--task02imagesdir") == true) {
-								task02imagesDir = thisManager.ImageJ_ReadParameter("--task02imagesdir=",argsLine,0);
-							} else if (argsLine.toLowerCase().contains("--task02images") == true) {
-								task02images = thisManager.ImageJ_ReadParameter("--task02images=",argsLine,0);
-							} 
-							
+							allArgs.add(argsLine);
 						}
+						thisManager.processArgs(allArgs);
 						readFile.close();
 					} catch (Exception e) {
 						UtilClass.DebugOutput("ERROR: Input parameter '--paramFile' recognized, but issue parsing out value.");
@@ -155,83 +94,14 @@ public class ImageJ_Manager {
 					
 				}
 			}
-			for (int i = 0; i < args.length; i++) {
-				// override any parameters defined explicitly, even if in --paramFile
-				if (args[i].toLowerCase().contains("--gui") == true) {
-					gui = Boolean.parseBoolean(thisManager.ImageJ_ReadParameter("--gui=",args[i],2));
-				} else if (args[i].toLowerCase().contains("--functionmode") == true) {
-					functionMode = thisManager.ImageJ_ReadParameter("--functionmode=",args[i],0);
-				} else if (args[i].toLowerCase().contains("--task01description") == true) {
-					task01description = thisManager.ImageJ_ReadParameter("--task01description=",args[i],0); 
-				} else if (args[i].toLowerCase().contains("--task01maxthreads") == true) {
-					task01maxThreads = Integer.parseInt(thisManager.ImageJ_ReadParameter("--task01maxthreads=",args[i],1));
-				} else if (args[i].toLowerCase().contains("--task01timeout") == true) {
-					task01timeout = Integer.parseInt(thisManager.ImageJ_ReadParameter("--task01timeout=",args[i],1));
-				} else if (args[i].toLowerCase().contains("--task01retryfails") == true) {
-					task01retryFails = Integer.parseInt(thisManager.ImageJ_ReadParameter("--task01retryfails=",args[i],1));
-				} else if (args[i].toLowerCase().contains("--task01cmd") == true) {
-					task01cmd = thisManager.ImageJ_ReadParameter("--task01cmd=",args[i],0);
-				} else if (args[i].toLowerCase().contains("--task01input01") == true) {
-					task01input[1] = thisManager.ImageJ_ReadParameterArray("--task01input01=", args[i]);
-				} else if (args[i].toLowerCase().contains("--task01input02") == true) {
-					task01input[2] = thisManager.ImageJ_ReadParameterArray("--task01input02=", args[i]);
-				} else if (args[i].toLowerCase().contains("--task01input03") == true) {
-					task01input[3] = thisManager.ImageJ_ReadParameterArray("--task01input03=", args[i]);
-				} else if (args[i].toLowerCase().contains("--task01input04") == true) {
-					task01input[4] = thisManager.ImageJ_ReadParameterArray("--task01input04=", args[i]);
-				} else if (args[i].toLowerCase().contains("--task01input05") == true) {
-					task01input[5] = thisManager.ImageJ_ReadParameterArray("--task01input05=", args[i]);
-				} else if (args[i].toLowerCase().contains("--task01input06") == true) {
-					task01input[6] = thisManager.ImageJ_ReadParameterArray("--task01input06=", args[i]);
-				} else if (args[i].toLowerCase().contains("--task01input07") == true) {
-					task01input[7] = thisManager.ImageJ_ReadParameterArray("--task01input07=", args[i]);
-				} else if (args[i].toLowerCase().contains("--task01input08") == true) {
-					task01input[8] = thisManager.ImageJ_ReadParameterArray("--task01input08=", args[i]);
-				} else if (args[i].toLowerCase().contains("--task01input09") == true) {
-					task01input[9] = thisManager.ImageJ_ReadParameterArray("--task01input09=", args[i]);
-				} else if (args[i].toLowerCase().contains("--task01imagesdir") == true) {
-					task01imagesDir = thisManager.ImageJ_ReadParameter("--task01imagesdir=",args[i],0);
-				} else if (args[i].toLowerCase().contains("--task01images") == true) {
-					task01images = thisManager.ImageJ_ReadParameter("--task01images=",args[i],0);
-				} else if (args[i].toLowerCase().contains("--task02description") == true) {
-					task02description = thisManager.ImageJ_ReadParameter("--task02description=",args[i],0); 	
-				} else if (args[i].toLowerCase().contains("--task02maxthreads") == true) {
-					task02maxThreads = Integer.parseInt(thisManager.ImageJ_ReadParameter("--task02maxthreads=",args[i],1));
-				} else if (args[i].toLowerCase().contains("--task02timeout") == true) {
-					task02timeout = Integer.parseInt(thisManager.ImageJ_ReadParameter("--task02timeout=",args[i],1));
-				} else if (args[i].toLowerCase().contains("--task02retryfails") == true) {
-					task02retryFails = Integer.parseInt(thisManager.ImageJ_ReadParameter("--task02retryfails=",args[i],1));
-				} else if (args[i].toLowerCase().contains("--task02cmd") == true) {
-					task02cmd = thisManager.ImageJ_ReadParameter("--task02cmd=",args[i],0);
-				} else if (args[i].toLowerCase().contains("--task02input01") == true) {
-					UtilClass.DebugOutput("Found task02input01");
-					task02input[1] = thisManager.ImageJ_ReadParameterArray("--task02input01=",args[i]);
-				} else if (args[i].toLowerCase().contains("--task02input02") == true) {
-					task02input[2] = thisManager.ImageJ_ReadParameterArray("--task02input02=", args[i]);
-				} else if (args[i].toLowerCase().contains("--task02input03") == true) {
-					task02input[3] = thisManager.ImageJ_ReadParameterArray("--task02input03=", args[i]);
-				} else if (args[i].toLowerCase().contains("--task02input04") == true) {
-					task02input[4] = thisManager.ImageJ_ReadParameterArray("--task02input04=",args[i]);
-				} else if (args[i].toLowerCase().contains("--task02input05") == true) {
-					task02input[5] = thisManager.ImageJ_ReadParameterArray("--task02input05=", args[i]);
-				} else if (args[i].toLowerCase().contains("--task02input06") == true) {
-					task02input[6] = thisManager.ImageJ_ReadParameterArray("--task02input06=", args[i]);
-				} else if (args[i].toLowerCase().contains("--task02input07") == true) {
-					task02input[7] = thisManager.ImageJ_ReadParameterArray("--task02input07=", args[i]);
-				} else if (args[i].toLowerCase().contains("--task02input08") == true) {
-					task02input[8] = thisManager.ImageJ_ReadParameterArray("--task02input08=", args[i]);
-				} else if (args[i].toLowerCase().contains("--task02input09") == true) {
-					task02input[9] = thisManager.ImageJ_ReadParameterArray("--task02input09=", args[i]);
-				} else if (args[i].toLowerCase().contains("--task02imagesdir") == true) {
-					task02imagesDir = thisManager.ImageJ_ReadParameter("--task02imagesdir=",args[i],0);
-				} else if (args[i].toLowerCase().contains("--task02images") == true) {
-					task02images = thisManager.ImageJ_ReadParameter("--task02images=",args[i],0);
-				} 
-			}
+			
+			//change array of args to list of args
+			List<String> allArgs = Arrays.asList(args);
+			thisManager.processArgs(allArgs);
 
 			for (int i = 0; i < args.length; i++) {
 				if (args[i].toLowerCase().contains("--printparam") == true && args[i].toLowerCase().contains("--printparamfile") == false) {
-					printParam = true;
+					thisManager.printParam = true;
 				}
 			}
 		} else {
@@ -241,7 +111,7 @@ public class ImageJ_Manager {
 		}
 		
 		
-		if (gui == true) {
+		if (thisManager.gui == true) {
 			ImageJ_Jobs_GUI guiManager = new ImageJ_Jobs_GUI();
 			guiManager.StartGUI();
 			return;
@@ -260,8 +130,8 @@ public class ImageJ_Manager {
 		
 
 		
-		
-		if (functionMode.contains("1") == true) {
+		//If this is true, we should have a Task that is task1
+		if (thisManager.functionMode.contains("1") == true) {
 			// if inputData == null and inputDataDir != null, read all image files in that immediate directory
 			if (task01images.length()>0 && task01imagesDir.length()>0) {
 				int task01imagesNum = Integer.parseInt(task01images.replace("|", ""));
@@ -413,8 +283,54 @@ public class ImageJ_Manager {
 		UtilClass.DebugOutput("Finished, closed.");
 	}
 	
+	
 	public ImageJ_Manager() {
 		
+	}
+	
+	
+	public void processArgs(List<String> args) {
+		//First, deal with the variables that don't have to do with tasks
+		for (int i=0; i < args.size(); i++) {
+			String currentArg = args.get(i);
+			if (currentArg.toLowerCase().contains("--gui") == true) {
+				gui = Boolean.parseBoolean(thisManager.ImageJ_ReadParameter("--gui=",currentArg,2));
+			} else if (currentArg.toLowerCase().contains("--functionmode") == true) {
+				functionMode = thisManager.ImageJ_ReadParameter("--functionmode=",currentArg,0);
+				functionModeList = Arrays.asList(functionMode.split(""));
+			}
+		}
+		//Next, deal with the tasks- make new tasks for each one in the map, and add it to the list of overall tasks
+		Map<String, List<String>> taskMap = thisManager.processTaskParams(args);
+		for (String task : taskMap.keySet()) {
+			List<String> taskWords = taskMap.get(task);
+			Task t = new Task(task, taskWords);
+			tasks.add(t);
+		}
+		
+	}
+	
+	public Map<String, List<String>> processTaskParams(List<String> args) {
+		List<String> taskWords = new ArrayList<String>();
+		for (int i=0; i < args.size(); i++) {
+			if(args.get(i).toLowerCase().contains("--task") == true) {
+				taskWords.add(args.get(i));
+			}
+		}
+		Map<String, List<String>> taskMap = new HashMap<String, List<String>>();
+		for (int i=0; i < taskWords.size(); i++) {
+			String taskWord = taskWords.get(i);
+			//this is not a great way to code this, but the task number is index 4-5 of the word
+			String taskNumber = taskWord.substring(4,6);
+			if(taskMap.containsKey(taskNumber)==true) {
+				taskMap.get(taskNumber).add(taskWord);
+			}else {
+				List<String> words = new ArrayList<String>();
+				words.add(taskWord);
+				taskMap.put(taskNumber, words);
+			}
+		}
+		return taskMap;
 	}
 	
 	public void PrintHelpDocs(String version) {
