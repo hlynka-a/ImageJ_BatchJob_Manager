@@ -33,23 +33,6 @@ public class ImageJ_Manager {
 	String functionMode = "1";		// example: 12	=> task 1 and task 2, in this order
 	List<String> functionModeList = new ArrayList<String>();
 	List<Task> tasks = new ArrayList<Task>();
-	int task01maxThreads = 4;
-	int task01timeout = 60000;
-	int task01retryFails = 2;
-	String task01cmd = "";
-	String [][] task01input = new String[10][];
-	String task01imagesDir = "-1";
-	String task01images = "-1";
-	String task01description = "(Task 01, written to do stuff.)";
-	
-	int task02maxThreads = 4;
-	int task02timeout = 60000;
-	int task02retryFails = 2;
-	String task02cmd = "";
-	String[][] task02input = new String[10][];
-	String task02imagesDir = "-1";
-	String task02images = "-1";
-	String task02description = "(Task 02, written to do stuff.)";
 	
 	static ImageJ_Manager thisManager = new ImageJ_Manager();
 	
@@ -132,149 +115,16 @@ public class ImageJ_Manager {
 		
 		//If this is true, we should have a Task that is task1
 		if (thisManager.functionMode.contains("1") == true) {
-			// if inputData == null and inputDataDir != null, read all image files in that immediate directory
-			if (task01images.length()>0 && task01imagesDir.length()>0) {
-				int task01imagesNum = Integer.parseInt(task01images.replace("|", ""));
-				int task01imagesDirNum = Integer.parseInt(task01imagesDir.replace("|", ""));
-				if (task01imagesNum == -1 && task01imagesDirNum == -1) {
-					// assume no image input, just run as 1 job with literal command.
-				}
-				else if ((task01input[task01imagesNum] == null || task01input[task01imagesNum].length == 0) && (task01input[task01imagesDirNum] != null)) {
-					// get input images list, used to determine how many jobs need to be done (assume 1 image per job) 
-					File fileDirectory = new File (task01input[task01imagesDirNum][0]);
-					if (fileDirectory.isDirectory() == true) {
-						File[] f = fileDirectory.listFiles(new FilenameFilter() {
-							@Override
-							public boolean accept(File dir, String name) {
-								boolean returnValue = false;
-								if (name.toLowerCase().endsWith(".jpg")
-										|| name.toLowerCase().endsWith(".jpeg")
-										|| name.toLowerCase().endsWith(".png")
-										|| name.toLowerCase().endsWith(".gif")
-										|| name.toLowerCase().endsWith(".tif")
-										|| name.toLowerCase().endsWith(".tiff")) {
-									returnValue = true;
-								}
-								return returnValue;
-							}
-						});
-						task01input[task01imagesNum] = new String[f.length];
-						for (int i = 0; i < f.length; i++) {
-							task01input[task01imagesNum][i] = f[i].getName();
-						}
-					}	
-				}
-			}
-			if (printParam == true) {
-				UtilClass.DebugOutput("****These are the recognized input parameters (if not specified by the user, these are the defaults).****");
-				UtilClass.DebugOutput("gui = " + gui);
-				UtilClass.DebugOutput("functionMode = " + functionMode);
-				UtilClass.DebugOutput("task01maxThreads = " + task01maxThreads);
-				UtilClass.DebugOutput("task01timeout = " + task01timeout);
-				UtilClass.DebugOutput("task01retryFails = " + task01retryFails);
-				UtilClass.DebugOutput("task01cmd = " + task01cmd);
-				UtilClass.DebugOutput("task01imagesDir = " + task01imagesDir);
-				UtilClass.DebugOutput("task01images = " + task01images);
-				for (int a = 0; a < task01input.length; a++) {
-					if (task01input[a] != null) {
-						UtilClass.DebugOutput("task01input0" + a + " = ");
-						for (int b = 0; b < task01input[a].length; b++) {
-							UtilClass.DebugOutput(task01input[a][b]);
-							if (b < task01input[a].length - 1) {
-								UtilClass.DebugOutput(", ");
-							}
-						}
-						UtilClass.DebugOutput("\n");
-					}
-				}
-				UtilClass.DebugOutput("****End of input parameters.****\n\n");
-			}
-			thisManager.task01description = task01description;
-			thisManager.task01maxThreads = task01maxThreads;
-			thisManager.task01timeout = task01timeout;
-			thisManager.task01retryFails = task01retryFails;
-			thisManager.task01cmd = task01cmd;
-			thisManager.task01input = task01input;
-			thisManager.task01images = Integer.parseInt(task01images.replace("|", ""));		//indicating variable 1 - 9, should be a number
-			thisManager.task01imagesDir = Integer.parseInt(task01imagesDir.replace("|", ""));
-			//thisManager.Initialize_Start();
-			if (thisManager.task01images == -1 && thisManager.task01imagesDir == -1) {
-				thisManager.RunTask01SingleThread();
-			} else {
-				thisManager.RunTask01();
-			}
+			Task task01 = thisManager.findTask("01");
+			thisManager.executeTask(task01);
 		}
-		if (functionMode.contains("2") == true) {
-			if (task02images.length()>0 && task02imagesDir.length()>0) {
-				int task02imagesNum = Integer.parseInt(task02images.replace("|", ""));
-				int task02imagesDirNum = Integer.parseInt(task02imagesDir.replace("|", ""));
-				if (task02imagesNum == -1 && task02imagesDirNum == -1) {
-					// assume no image input, just run as 1 job with literal command.
-				}
-				else if ((task02input[task02imagesNum] == null || task02input[task02imagesNum].length == 0) && (task02input[task02imagesDirNum] != null)) {
-					// get input images list, used to determine how many jobs need to be done (assume 1 image per job) 
-					File fileDirectory = new File (task02input[task02imagesDirNum][0]);
-					if (fileDirectory.isDirectory() == true) {
-						File[] f = fileDirectory.listFiles(new FilenameFilter() {
-							@Override
-							public boolean accept(File dir, String name) {
-								boolean returnValue = false;
-								if (name.toLowerCase().endsWith(".jpg")
-										|| name.toLowerCase().endsWith(".jpeg")
-										|| name.toLowerCase().endsWith(".png")
-										|| name.toLowerCase().endsWith(".gif")
-										|| name.toLowerCase().endsWith(".tif")
-										|| name.toLowerCase().endsWith(".tiff")) {
-									returnValue = true;
-								}
-								return returnValue;
-							}
-						});
-						task02input[task02imagesNum] = new String[f.length];
-						for (int i = 0; i < f.length; i++) {
-							task02input[task02imagesNum][i] = f[i].getName();
-						}
-					}	
-				}
-			}
-			if (printParam == true) {
-				UtilClass.DebugOutput("****These are the recognized input parameters (if not specified by the user, these are the defaults).****");
-				UtilClass.DebugOutput("task02maxThreads = " + task02maxThreads);
-				UtilClass.DebugOutput("task02timeout = " + task02timeout);
-				UtilClass.DebugOutput("task02retryFails = " + task02retryFails);
-				UtilClass.DebugOutput("task02cmd = " + task02cmd);
-				UtilClass.DebugOutput("task02imagesDir = " + task02imagesDir);
-				UtilClass.DebugOutput("task02images = " + task02images);
-				for (int a = 0; a < task02input.length; a++) {
-					if (task02input[a] != null) {
-						UtilClass.DebugOutput("task02input0" + a + " = ");
-						for (int b = 0; b < task02input[a].length; b++) {
-							UtilClass.DebugOutput(task02input[a][b]);
-							if (b < task02input[a].length - 1) {
-								UtilClass.DebugOutput(", ");
-							}
-						}
-						UtilClass.DebugOutput("\n");
-					}
-				}
-				UtilClass.DebugOutput("****End of input parameters.****\n\n");
-			}
-			thisManager.task02description = task02description;
-			thisManager.task02maxThreads = task02maxThreads;
-			thisManager.task02timeout = task02timeout;
-			thisManager.task02retryFails = task02retryFails;
-			thisManager.task02cmd = task02cmd;
-			thisManager.task02input = task02input;
-			thisManager.task02images = Integer.parseInt(task02images.replace("|", ""));			//indicating variable 1 - 9, should be a number
-			thisManager.task02imagesDir = Integer.parseInt(task02imagesDir.replace("|", ""));
-			//thisManager.ImageJ_StartJobs();
-			if (thisManager.task02images == -1 && thisManager.task02imagesDir == -1) {
-				thisManager.RunTask02SingleThread();
-			} else {
-				thisManager.RunTask02();
-			}
-		} 
-		if (functionMode.contains("3") == true) {
+			
+		if (thisManager.functionMode.contains("2") == true) {
+			Task task02 = thisManager.findTask("02");
+			thisManager.executeTask(task02);
+		}
+			
+		if (thisManager.functionMode.contains("3") == true) {
 			thisManager.CombineCSV_Start();
 		}
 		
@@ -286,6 +136,84 @@ public class ImageJ_Manager {
 	
 	public ImageJ_Manager() {
 		
+	}
+	
+	public void executeTask(Task task) {
+		if (task.taskimages.length()>0 && task.taskimagesDir.length()>0) {
+			int taskimagesNum = Integer.parseInt(task.taskimages.replace("|", ""));
+			int taskimagesDirNum = Integer.parseInt(task.taskimagesDir.replace("|", ""));
+			if (taskimagesNum == -1 && taskimagesDirNum == -1) {
+				// assume no image input, just run as 1 job with literal command.
+			}
+			else if ((task.taskinput[taskimagesNum] == null || task.taskinput[taskimagesNum].length == 0) && (task.taskinput[taskimagesDirNum] != null)) {
+				// get input images list, used to determine how many jobs need to be done (assume 1 image per job) 
+				File fileDirectory = new File (task.taskinput[taskimagesDirNum][0]);
+				if (fileDirectory.isDirectory() == true) {
+					File[] f = fileDirectory.listFiles(new FilenameFilter() {
+						@Override
+						public boolean accept(File dir, String name) {
+							boolean returnValue = false;
+							if (name.toLowerCase().endsWith(".jpg")
+									|| name.toLowerCase().endsWith(".jpeg")
+									|| name.toLowerCase().endsWith(".png")
+									|| name.toLowerCase().endsWith(".gif")
+									|| name.toLowerCase().endsWith(".tif")
+									|| name.toLowerCase().endsWith(".tiff")) {
+								returnValue = true;
+							}
+							return returnValue;
+						}
+					});
+					task.taskinput[taskimagesNum] = new String[f.length];
+					for (int i = 0; i < f.length; i++) {
+						task.taskinput[taskimagesNum][i] = f[i].getName();
+					}
+				}	
+			}
+		}
+		if (thisManager.printParam == true) {
+			String taskString = "task" + task.taskNumber;
+			UtilClass.DebugOutput("****These are the recognized input parameters (if not specified by the user, these are the defaults).****");
+			UtilClass.DebugOutput("gui = " + thisManager.gui);
+			UtilClass.DebugOutput("functionMode = " + thisManager.functionMode);
+			UtilClass.DebugOutput(taskString + "maxThreads = " + task.maxThreads);
+			UtilClass.DebugOutput(taskString + "timeout = " + task.tasktimeout);
+			UtilClass.DebugOutput(taskString + "retryFails = " + task.taskretryFails);
+			UtilClass.DebugOutput(taskString + "cmd = " + task.taskcmd);
+			UtilClass.DebugOutput(taskString + "imagesDir = " + task.taskimagesDir);
+			UtilClass.DebugOutput(taskString + "images = " + task.taskimages);
+			for (int a = 0; a < task.taskinput.length; a++) {
+				if (task.taskinput[a] != null) {
+					UtilClass.DebugOutput(taskString + "input0" + a + " = ");
+					for (int b = 0; b < task.taskinput[a].length; b++) {
+						UtilClass.DebugOutput(task.taskinput[a][b]);
+						if (b < task.taskinput[a].length - 1) {
+							UtilClass.DebugOutput(", ");
+						}
+					}
+					UtilClass.DebugOutput("\n");
+				}
+			}
+			UtilClass.DebugOutput("****End of input parameters.****\n\n");
+		}
+		int taskImages = Integer.parseInt(task.taskimages.replace("|", ""));			//indicating variable 1 - 9, should be a number
+		int imagesDir = Integer.parseInt(task.taskimagesDir.replace("|", ""));
+		//thisManager.ImageJ_StartJobs();
+		if (taskImages == -1 && imagesDir == -1) {
+			thisManager.RunGenericTask(task.taskNumber, true);
+		} else {
+			thisManager.RunGenericTask(task.taskNumber, false);
+		}
+	}
+	
+	public Task findTask(String number) {
+		for(int i=0; i < tasks.size(); i++) {
+			if(tasks.get(i).taskNumber == number) {
+				return tasks.get(i);
+			}
+		}
+		UtilClass.DebugOutput("Could not find task with number " + number);
+		return new Task();
 	}
 	
 	
@@ -482,7 +410,7 @@ public class ImageJ_Manager {
 	
 	long startExecutionTime = 0;
 	
-	public void modifyCancelRequest(int taskNumber) {
+	public void modifyCancelRequest(String taskNumber) {
 		UtilClass.DebugOutput("CANCEL requested during Task " + taskNumber + ", canceling further executions.");
 		cancelRequest = 0;
 	}
@@ -511,21 +439,22 @@ public class ImageJ_Manager {
 		return failedRuns;
 	}
 	
-	public int RunGenericTask(int taskNumber, boolean singleThread) {
+	public int RunGenericTask(String taskNumber, boolean singleThread) {
 		
+		Task task = thisManager.findTask(taskNumber);
 		//get info from GUI
-		populateListsFromGUI();
+		//populateListsFromGUI();
 		
-		int taskIndex = taskNumber - 1;
 		//Get all the variables relevant to this task
-		String taskDescription = taskDescriptions.get(taskIndex);
-		int taskMaxThreadCount = taskMaxThreads.get(taskIndex);
-		int taskTimeout = taskTimeouts.get(taskIndex);
-		int taskRetryFail = taskRetryFails.get(taskIndex);
-		String taskCmd = taskCommands.get(taskIndex);
-		String[][]taskInput = taskInputs.get(taskIndex);
-		int taskImage = taskImages.get(taskIndex);
-		int taskImagesDir = taskImagesDirs.get(taskIndex);
+		String taskDescription = task.taskdescription;
+		int taskMaxThreadCount = task.maxThreads;
+		int taskTimeout = task.tasktimeout;
+		int taskRetryFail = task.taskretryFails;
+		String taskCmd = task.taskcmd;
+		String[][]taskInput = task.taskinput;
+		
+		int taskImage = Integer.parseInt(task.taskimages.replace("|", ""));			//indicating variable 1 - 9, should be a number
+		int taskimagesDir = Integer.parseInt(task.taskimagesDir.replace("|", ""));
 		
 		int taskInputImageLength = 1;
 		if(singleThread == false) {
