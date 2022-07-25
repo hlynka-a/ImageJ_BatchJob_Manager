@@ -1566,10 +1566,10 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
 					if (thisManager.task01images == -1 && thisManager.task01imagesDir == -1) {
 						UtilClass.DebugOutput("Running Single Thread Task 1");
 						//resultStatus = thisManager.RunTask01SingleThread();
-						resultStatus = thisManager.RunGenericTask(1,true);
+						resultStatus = thisManager.RunGenericTask("01",true);
 					} else {
 						UtilClass.DebugOutput("Running Generic Task 1");
-						resultStatus = thisManager.RunGenericTask(1, false);
+						resultStatus = thisManager.RunGenericTask("01", false);
 					}
 					UtilClass.DebugOutput("ResultStatus = " + resultStatus);
 				} else {
@@ -1651,9 +1651,9 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
 					//resultStatus = thisManager.ImageJ_StartJobs();
 					if (thisManager.task02images == -1 && thisManager.task02imagesDir == -1) {
 						//resultStatus = thisManager.RunTask02SingleThread();
-						resultStatus = thisManager.RunGenericTask(2, true);
+						resultStatus = thisManager.RunGenericTask("02", true);
 					} else {
-						resultStatus = thisManager.RunGenericTask(2, false);
+						resultStatus = thisManager.RunGenericTask("02", false);
 					}
 					UtilClass.DebugOutput("ResultStatus = " + resultStatus);
 				} else {

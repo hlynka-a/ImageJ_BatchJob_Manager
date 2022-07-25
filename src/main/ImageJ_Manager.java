@@ -208,7 +208,10 @@ public class ImageJ_Manager {
 	
 	public Task findTask(String number) {
 		for(int i=0; i < tasks.size(); i++) {
-			if(tasks.get(i).taskNumber == number) {
+			UtilClass.DebugOutput("Task:" + tasks.get(i).taskNumber);
+		}
+		for(int i=0; i < tasks.size(); i++) {
+			if(tasks.get(i).taskNumber.equals(number)) {
 				return tasks.get(i);
 			}
 		}
@@ -230,10 +233,15 @@ public class ImageJ_Manager {
 		}
 		//Next, deal with the tasks- make new tasks for each one in the map, and add it to the list of overall tasks
 		Map<String, List<String>> taskMap = thisManager.processTaskParams(args);
+		for(String task: taskMap.keySet()) {
+			UtilClass.DebugOutput("Task: " + task);
+		}
 		for (String task : taskMap.keySet()) {
 			List<String> taskWords = taskMap.get(task);
+			UtilClass.DebugOutput("Task number: " + task);
 			Task t = new Task(task, taskWords);
 			tasks.add(t);
+			UtilClass.DebugOutput("Task added: " + task);
 		}
 		
 	}
@@ -248,8 +256,8 @@ public class ImageJ_Manager {
 		Map<String, List<String>> taskMap = new HashMap<String, List<String>>();
 		for (int i=0; i < taskWords.size(); i++) {
 			String taskWord = taskWords.get(i);
-			//this is not a great way to code this, but the task number is index 4-5 of the word
-			String taskNumber = taskWord.substring(4,6);
+			//this is not a great way to code this, but the task number is index 6-8 of the word
+			String taskNumber = taskWord.substring(6,8);
 			if(taskMap.containsKey(taskNumber)==true) {
 				taskMap.get(taskNumber).add(taskWord);
 			}else {

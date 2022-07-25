@@ -19,6 +19,7 @@ public class Task{
 		for (int i = 0; i < taskWords.size(); i++) {
 			String currentWord = taskWords.get(i);
 			String removeWord = currentWord.split("=")[0] + "=";
+			removeWord = removeWord.toLowerCase();
 			if (currentWord.toLowerCase().contains("description") == true) {	
 				taskdescription = this.ImageJ_ReadParameter(removeWord,currentWord,0); 
 			} else if (currentWord.toLowerCase().contains("maxthreads") == true) {
