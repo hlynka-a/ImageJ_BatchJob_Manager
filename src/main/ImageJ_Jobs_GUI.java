@@ -964,17 +964,37 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
 				functionModeList = Arrays.asList(functionMode.split(""));
 			}
 		}
-		//Next, deal with the tasks- make new tasks for each one in the map, and add it to the list of overall tasks
-		Map<String, List<String>> taskMap = thisManager.processTaskParams(args);
+		//Next, deal with the tasks- make new tasks for each one in the map if it's not already in the map, and add it to the list of overall tasks
+		Map<String, List<String>> taskMap = processTaskParams(args);
 		for(String task: taskMap.keySet()) {
 			UtilClass.DebugOutput("Task: " + task);
 		}
+		List<Task> newTasks = new ArrayList<Task>();
 		for (String task : taskMap.keySet()) {
 			List<String> taskWords = taskMap.get(task);
 			UtilClass.DebugOutput("Task number: " + task);
+			
 			Task t = new Task(task, taskWords);
-			tasks.add(t);
+			newTasks.add(t);
 			UtilClass.DebugOutput("Task added: " + task);
+		}
+		List<Task> finalTasks = new ArrayList<Task>();
+		for(Task oldTask : tasks) {
+			String currentTaskNum = oldTask.taskNumber;
+			boolean foundTask = false;
+			for(Task newTask : newTasks) {
+				if(newTask.taskNumber.equals(currentTaskNum)) {
+					finalTasks.add(newTask);
+					foundTask = true;
+				}
+			}
+			if(foundTask == false) {
+				finalTasks.add(oldTask);
+			}
+		}
+		tasks.clear();
+		for(Task t : finalTasks) {
+			tasks.add(t);
 		}
 		
 	}
@@ -997,6 +1017,13 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
 				List<String> words = new ArrayList<String>();
 				words.add(taskWord);
 				taskMap.put(taskNumber, words);
+			}
+		}
+		//Print the task map before returning
+		for(String task:taskMap.keySet()) {
+			UtilClass.DebugOutput("Task:" + task);
+			for(int i=0; i < taskMap.get(task).size(); i++) {
+				UtilClass.DebugOutput("list object: " + taskMap.get(task).get(i));
 			}
 		}
 		return taskMap;

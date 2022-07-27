@@ -142,6 +142,7 @@ public class ImageJ_Manager {
 	public void executeTask(Task task) {
 		UtilClass.DebugOutput("Inside execute task");
 		if (task.taskimages.length()>0 && task.taskimagesDir.length()>0) {
+			UtilClass.DebugOutput("Inside task images > 0");
 			int taskimagesNum = Integer.parseInt(task.taskimages.replace("|", ""));
 			int taskimagesDirNum = Integer.parseInt(task.taskimagesDir.replace("|", ""));
 			UtilClass.DebugOutput("taskimagesNum:" + taskimagesNum);
