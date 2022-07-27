@@ -916,12 +916,12 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
     
     int currentlyRunning = 0;	//0 = not executing, 1 = in the middle of executing
     
-	String paramFile = null;	//filepath
-	boolean gui = true;
-	boolean printParam = false;
-	String functionMode = "1";		// example: 12	=> task 1 and task 2, in this order
-	List<String> functionModeList = new ArrayList<String>();
-	List<Task> tasks = new ArrayList<Task>();
+//	String paramFile = null;	//filepath
+//	boolean gui = true;
+//	boolean printParam = false;
+//	String functionMode = "1";		// example: 12	=> task 1 and task 2, in this order
+//	List<String> functionModeList = new ArrayList<String>();
+//	List<Task> tasks = new ArrayList<Task>();
 	
 	int task01maxThreads = 4;
 	int task01timeout = 60000;
@@ -940,13 +940,13 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
 	String task02images = "";
 	
 	public Task findTask(String number) {
-		for(int i=0; i < tasks.size(); i++) {
-			UtilClass.DebugOutput("Task:" + tasks.get(i).taskNumber);
+		for(int i=0; i < thisManager.tasks.size(); i++) {
+			UtilClass.DebugOutput("Task:" + thisManager.tasks.get(i).taskNumber);
 		}
-		for(int i=0; i < tasks.size(); i++) {
-			if(tasks.get(i).taskNumber.equals(number)) {
-				UtilClass.DebugOutput("Returning task: " + tasks.get(i).taskNumber);
-				return tasks.get(i);
+		for(int i=0; i < thisManager.tasks.size(); i++) {
+			if(thisManager.tasks.get(i).taskNumber.equals(number)) {
+				UtilClass.DebugOutput("Returning task: " + thisManager.tasks.get(i).taskNumber);
+				return thisManager.tasks.get(i);
 			}
 		}
 		UtilClass.DebugOutput("Could not find task with number " + number);
@@ -958,10 +958,10 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
 		for (int i=0; i < args.size(); i++) {
 			String currentArg = args.get(i);
 			if (currentArg.toLowerCase().contains("--gui") == true) {
-				gui = Boolean.parseBoolean(thisManager.ImageJ_ReadParameter("--gui=",currentArg,2));
+				thisManager.gui = Boolean.parseBoolean(thisManager.ImageJ_ReadParameter("--gui=",currentArg,2));
 			} else if (currentArg.toLowerCase().contains("--functionmode") == true) {
-				functionMode = thisManager.ImageJ_ReadParameter("--functionmode=",currentArg,0);
-				functionModeList = Arrays.asList(functionMode.split(""));
+				thisManager.functionMode = thisManager.ImageJ_ReadParameter("--functionmode=",currentArg,0);
+				thisManager.functionModeList = Arrays.asList(thisManager.functionMode.split(""));
 			}
 		}
 		//Next, deal with the tasks- make new tasks for each one in the map if it's not already in the map, and add it to the list of overall tasks
@@ -979,7 +979,7 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
 			UtilClass.DebugOutput("Task added: " + task);
 		}
 		List<Task> finalTasks = new ArrayList<Task>();
-		for(Task oldTask : tasks) {
+		for(Task oldTask : thisManager.tasks) {
 			String currentTaskNum = oldTask.taskNumber;
 			boolean foundTask = false;
 			for(Task newTask : newTasks) {
@@ -992,9 +992,9 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
 				finalTasks.add(oldTask);
 			}
 		}
-		tasks.clear();
+		thisManager.tasks.clear();
 		for(Task t : finalTasks) {
-			tasks.add(t);
+			thisManager.tasks.add(t);
 		}
 		
 	}
@@ -1058,7 +1058,7 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
     }
     
     private void LoadDefaults() {
-    	functionMode = "123";
+    	thisManager.functionMode = "123";
     	//Create some default tasks
     	Task task1 = new Task();
     	task1.taskNumber = "01";
@@ -1068,7 +1068,7 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
     	task1.taskcmd = "sample cmd";
     	task1.taskimagesDir = "";
     	task1.taskimages = "";
-    	tasks.add(task1);
+    	thisManager.tasks.add(task1);
     	
     	Task task2 = new Task();
     	task2.taskNumber = "02";
@@ -1078,7 +1078,7 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
     	task2.taskcmd = "sample cmd";
     	task2.taskimagesDir = "";
     	task2.taskimages = "";
-    	tasks.add(task2);
+    	thisManager.tasks.add(task2);
     }
     
         
@@ -1094,7 +1094,7 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
     	if (jcheckbox_task3.isSelected() == true) {
     		nFunctionMode += "3";
     	}
-    	functionMode = nFunctionMode;
+    	thisManager.functionMode = nFunctionMode;
     	
     	task01cmd = jTF_task01cmd.getText();
     	task01maxThreads = Integer.parseInt(jTF_task01threads.getText());
@@ -1168,17 +1168,17 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
     }
     
     private void UpdateGUIValues() {
-    	if (functionMode.contains("1") == true) {
+    	if (thisManager.functionMode.contains("1") == true) {
     		jcheckbox_task1.setSelected(true);
     	} else {
     		jcheckbox_task1.setSelected(false);
     	}
-    	if (functionMode.contains("2") == true) {
+    	if (thisManager.functionMode.contains("2") == true) {
     		jcheckbox_task2.setSelected(true);
     	} else {
     		jcheckbox_task2.setSelected(false);
     	}
-    	if (functionMode.contains("3") == true) {
+    	if (thisManager.functionMode.contains("3") == true) {
     		jcheckbox_task3.setSelected(true);
     	} else {
     		jcheckbox_task3.setSelected(false);
@@ -1519,15 +1519,15 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
 			}
 			
 			UtilClass.StatusOutput("Running...", Color.orange);
-			if (functionMode.contains("1") == true) {
+			if (thisManager.functionMode.contains("1") == true) {
 				Task task01 = findTask("01");
 				thisManager.executeTask(task01);
 			}
-			if (functionMode.contains("2") == true) {
+			if (thisManager.functionMode.contains("2") == true) {
 				Task task02 = findTask("02");
 				thisManager.executeTask(task02);
 			}
-			if (functionMode.contains("3") == true) {
+			if (thisManager.functionMode.contains("3") == true) {
 				if (resultStatus >= 0) {
 					resultStatus = thisManager.CombineCSV_Start();
 				} else {
