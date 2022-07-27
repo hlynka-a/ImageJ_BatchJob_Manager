@@ -41,6 +41,7 @@ public class Task{
 			} else if (currentWord.toLowerCase().contains("--taskimagesDir") == true) {
 				taskimagesDir = this.ImageJ_ReadParameter(removeWord,currentWord,0);
 			} else if (currentWord.toLowerCase().contains("--taskimages") == true) {
+				UtilClass.DebugOutput("Task images here:" + currentWord);
 				taskimages = this.ImageJ_ReadParameter(removeWord,currentWord,0);
 			}
 		}

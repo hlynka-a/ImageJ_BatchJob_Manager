@@ -93,6 +93,7 @@ public class ImageJ_Manager {
 			UtilClass.DebugOutput("(Run again with parameter '--printParam' to print out default or specified parameters for this execution.)");
 		}
 		
+		//thisManager.gui = false;
 		
 		if (thisManager.gui == true) {
 			ImageJ_Jobs_GUI guiManager = new ImageJ_Jobs_GUI();
@@ -139,10 +140,13 @@ public class ImageJ_Manager {
 	}
 	
 	public void executeTask(Task task) {
+		UtilClass.DebugOutput("Inside execute task");
 		if (task.taskimages.length()>0 && task.taskimagesDir.length()>0) {
 			int taskimagesNum = Integer.parseInt(task.taskimages.replace("|", ""));
 			int taskimagesDirNum = Integer.parseInt(task.taskimagesDir.replace("|", ""));
+			UtilClass.DebugOutput("taskimagesNum:" + taskimagesNum);
 			if (taskimagesNum == -1 && taskimagesDirNum == -1) {
+				UtilClass.DebugOutput("no image input");
 				// assume no image input, just run as 1 job with literal command.
 			}
 			else if ((task.taskinput[taskimagesNum] == null || task.taskinput[taskimagesNum].length == 0) && (task.taskinput[taskimagesDirNum] != null)) {
@@ -200,8 +204,10 @@ public class ImageJ_Manager {
 		int imagesDir = Integer.parseInt(task.taskimagesDir.replace("|", ""));
 		//thisManager.ImageJ_StartJobs();
 		if (taskImages == -1 && imagesDir == -1) {
+			UtilClass.DebugOutput("Running generic task with true");
 			thisManager.RunGenericTask(task.taskNumber, true);
 		} else {
+			UtilClass.DebugOutput("Running generic task with false");
 			thisManager.RunGenericTask(task.taskNumber, false);
 		}
 	}
@@ -212,6 +218,7 @@ public class ImageJ_Manager {
 		}
 		for(int i=0; i < tasks.size(); i++) {
 			if(tasks.get(i).taskNumber.equals(number)) {
+				UtilClass.DebugOutput("Returning task: " + tasks.get(i).taskNumber);
 				return tasks.get(i);
 			}
 		}
@@ -449,6 +456,7 @@ public class ImageJ_Manager {
 	
 	public int RunGenericTask(String taskNumber, boolean singleThread) {
 		
+		
 		Task task = thisManager.findTask(taskNumber);
 		//get info from GUI
 		//populateListsFromGUI();
@@ -461,6 +469,7 @@ public class ImageJ_Manager {
 		String taskCmd = task.taskcmd;
 		String[][]taskInput = task.taskinput;
 		
+		UtilClass.DebugOutput(task.taskimages);
 		int taskImage = Integer.parseInt(task.taskimages.replace("|", ""));			//indicating variable 1 - 9, should be a number
 		int taskimagesDir = Integer.parseInt(task.taskimagesDir.replace("|", ""));
 		

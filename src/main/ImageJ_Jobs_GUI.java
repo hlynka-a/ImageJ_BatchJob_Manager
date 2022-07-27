@@ -9,6 +9,11 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -915,6 +920,8 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
 	boolean gui = true;
 	boolean printParam = false;
 	String functionMode = "1";		// example: 12	=> task 1 and task 2, in this order
+	List<String> functionModeList = new ArrayList<String>();
+	List<Task> tasks = new ArrayList<Task>();
 	
 	int task01maxThreads = 4;
 	int task01timeout = 60000;
@@ -931,6 +938,69 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
 	String[][] task02input = new String[10][];
 	String task02imagesDir = "";
 	String task02images = "";
+	
+	public Task findTask(String number) {
+		for(int i=0; i < tasks.size(); i++) {
+			UtilClass.DebugOutput("Task:" + tasks.get(i).taskNumber);
+		}
+		for(int i=0; i < tasks.size(); i++) {
+			if(tasks.get(i).taskNumber.equals(number)) {
+				UtilClass.DebugOutput("Returning task: " + tasks.get(i).taskNumber);
+				return tasks.get(i);
+			}
+		}
+		UtilClass.DebugOutput("Could not find task with number " + number);
+		return new Task();
+	}
+	
+	public void processArgs(List<String> args) {
+		//First, deal with the variables that don't have to do with tasks
+		for (int i=0; i < args.size(); i++) {
+			String currentArg = args.get(i);
+			if (currentArg.toLowerCase().contains("--gui") == true) {
+				gui = Boolean.parseBoolean(thisManager.ImageJ_ReadParameter("--gui=",currentArg,2));
+			} else if (currentArg.toLowerCase().contains("--functionmode") == true) {
+				functionMode = thisManager.ImageJ_ReadParameter("--functionmode=",currentArg,0);
+				functionModeList = Arrays.asList(functionMode.split(""));
+			}
+		}
+		//Next, deal with the tasks- make new tasks for each one in the map, and add it to the list of overall tasks
+		Map<String, List<String>> taskMap = thisManager.processTaskParams(args);
+		for(String task: taskMap.keySet()) {
+			UtilClass.DebugOutput("Task: " + task);
+		}
+		for (String task : taskMap.keySet()) {
+			List<String> taskWords = taskMap.get(task);
+			UtilClass.DebugOutput("Task number: " + task);
+			Task t = new Task(task, taskWords);
+			tasks.add(t);
+			UtilClass.DebugOutput("Task added: " + task);
+		}
+		
+	}
+	
+	public Map<String, List<String>> processTaskParams(List<String> args) {
+		List<String> taskWords = new ArrayList<String>();
+		for (int i=0; i < args.size(); i++) {
+			if(args.get(i).toLowerCase().contains("--task") == true) {
+				taskWords.add(args.get(i));
+			}
+		}
+		Map<String, List<String>> taskMap = new HashMap<String, List<String>>();
+		for (int i=0; i < taskWords.size(); i++) {
+			String taskWord = taskWords.get(i);
+			//this is not a great way to code this, but the task number is index 6-8 of the word
+			String taskNumber = taskWord.substring(6,8);
+			if(taskMap.containsKey(taskNumber)==true) {
+				taskMap.get(taskNumber).add(taskWord);
+			}else {
+				List<String> words = new ArrayList<String>();
+				words.add(taskWord);
+				taskMap.put(taskNumber, words);
+			}
+		}
+		return taskMap;
+	}
     
     private void LoadFile(String filePath, String fileName) {
     	File inputFile = new File(filePath + fileName);
@@ -945,10 +1015,12 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
 			UtilClass.DebugOutput("---End of File Contents.---");
 			fileReader = new Scanner(inputFile);
 			LoadDefaults();
+			List<String> allArgs = new ArrayList<String>();
 			while (fileReader.hasNextLine()) {
 				String argsLine = fileReader.nextLine();
-				LoadFileLine(argsLine);
+				allArgs.add(argsLine);
 			}
+			processArgs(allArgs);
 			UpdateGUIValues();
 			fileReader.close();
 		} catch (FileNotFoundException e) {
@@ -960,106 +1032,29 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
     
     private void LoadDefaults() {
     	functionMode = "123";
-    	task01maxThreads = 2;
-		task01timeout = 10000;
-		task01retryFails = 1;
-		task01cmd = "sample cmd";
-		task01input[1] = null;
-		task01input[2] = null;
-		task01input[3] = null;
-		task01input[4] = null;
-		task01input[5] = null;
-		task01input[6] = null;
-		task01input[7] = null;
-		task01input[8] = null;
-		task01input[9] = null;
-		task01imagesDir = "";
-		task01images = "";
-    	task02maxThreads = 2;
-    	task02timeout = 10000;
-		task02retryFails = 1;
-		task02cmd = "sample cmd";
-		task02input[1] = null;
-		task02input[2] = null;
-		task02input[3] = null;
-		task02input[4] = null;
-		task02input[5] = null;
-		task02input[6] = null;
-		task02input[7] = null;
-		task02input[8] = null;
-		task02input[9] = null;
-		task02imagesDir = "";
-		task02images = "";
+    	//Create some default tasks
+    	Task task1 = new Task();
+    	task1.taskNumber = "01";
+    	task1.maxThreads = 2;
+    	task1.tasktimeout = 10000;
+    	task1.taskretryFails = 1;
+    	task1.taskcmd = "sample cmd";
+    	task1.taskimagesDir = "";
+    	task1.taskimages = "";
+    	tasks.add(task1);
+    	
+    	Task task2 = new Task();
+    	task2.taskNumber = "02";
+    	task2.maxThreads = 2;
+    	task2.tasktimeout = 10000;
+    	task2.taskretryFails = 1;
+    	task2.taskcmd = "sample cmd";
+    	task2.taskimagesDir = "";
+    	task2.taskimages = "";
+    	tasks.add(task2);
     }
     
-    private void LoadFileLine(String argsLine) {
-		if (argsLine.toLowerCase().contains("--gui") == true) {
-			//gui = Boolean.parseBoolean(thisManager.ImageJ_ReadParameter("--gui=",argsLine,2));
-		} else if (argsLine.toLowerCase().contains("--functionmode") == true) {
-			functionMode = thisManager.ImageJ_ReadParameter("--functionmode=",argsLine,0);
-		} else if (argsLine.toLowerCase().contains("--task01maxthreads") == true) {
-			task01maxThreads = Integer.parseInt(thisManager.ImageJ_ReadParameter("--task01maxthreads=",argsLine,1));
-		} else if (argsLine.toLowerCase().contains("--task01timeout") == true) {
-			task01timeout = Integer.parseInt(thisManager.ImageJ_ReadParameter("--task01timeout=",argsLine,1));
-		} else if (argsLine.toLowerCase().contains("--task01retryfails") == true) {
-			task01retryFails = Integer.parseInt(thisManager.ImageJ_ReadParameter("--task01retryfails=",argsLine,1));
-		} else if (argsLine.toLowerCase().contains("--task01cmd") == true) {
-			task01cmd = thisManager.ImageJ_ReadParameter("--task01cmd=",argsLine,0);
-		} else if (argsLine.toLowerCase().contains("--task01input01") == true) {
-			task01input[1] = thisManager.ImageJ_ReadParameterArray("--task01input01=", argsLine);
-		} else if (argsLine.toLowerCase().contains("--task01input02") == true) {
-			task01input[2] = thisManager.ImageJ_ReadParameterArray("--task01input02=", argsLine);
-		} else if (argsLine.toLowerCase().contains("--task01input03") == true) {
-			task01input[3] = thisManager.ImageJ_ReadParameterArray("--task01input03=", argsLine);
-		} else if (argsLine.toLowerCase().contains("--task01input04") == true) {
-			task01input[4] = thisManager.ImageJ_ReadParameterArray("--task01input04=", argsLine);
-		} else if (argsLine.toLowerCase().contains("--task01input05") == true) {
-			task01input[5] = thisManager.ImageJ_ReadParameterArray("--task01input05=", argsLine);
-		} else if (argsLine.toLowerCase().contains("--task01input06") == true) {
-			task01input[6] = thisManager.ImageJ_ReadParameterArray("--task01input06=", argsLine);
-		} else if (argsLine.toLowerCase().contains("--task01input07") == true) {
-			task01input[7] = thisManager.ImageJ_ReadParameterArray("--task01input07=", argsLine);
-		} else if (argsLine.toLowerCase().contains("--task01input08") == true) {
-			task01input[8] = thisManager.ImageJ_ReadParameterArray("--task01input08=", argsLine);
-		} else if (argsLine.toLowerCase().contains("--task01input09") == true) {
-			task01input[9] = thisManager.ImageJ_ReadParameterArray("--task01input09=", argsLine);
-		} else if (argsLine.toLowerCase().contains("--task01imagesdir") == true) {
-			task01imagesDir = thisManager.ImageJ_ReadParameter("--task01imagesdir=",argsLine,0);
-		} else if (argsLine.toLowerCase().contains("--task01images") == true) {
-			task01images = thisManager.ImageJ_ReadParameter("--task01images=",argsLine,0);
-		} else if (argsLine.toLowerCase().contains("--task02maxthreads") == true) {
-			task02maxThreads = Integer.parseInt(thisManager.ImageJ_ReadParameter("--task02maxthreads=",argsLine,1));
-		} else if (argsLine.toLowerCase().contains("--task02timeout") == true) {
-			task02timeout = Integer.parseInt(thisManager.ImageJ_ReadParameter("--task02timeout=",argsLine,1));
-		} else if (argsLine.toLowerCase().contains("--task02retryfails") == true) {
-			task02retryFails = Integer.parseInt(thisManager.ImageJ_ReadParameter("--task02retryfails=",argsLine,1));
-		} else if (argsLine.toLowerCase().contains("--task02cmd") == true) {
-			task02cmd = thisManager.ImageJ_ReadParameter("--task02cmd=",argsLine,0);
-		} else if (argsLine.toLowerCase().contains("--task02input01") == true) {
-			task02input[1] = thisManager.ImageJ_ReadParameterArray("--task02input01=", argsLine);
-		} else if (argsLine.toLowerCase().contains("--task02input02") == true) {
-			task02input[2] = thisManager.ImageJ_ReadParameterArray("--task02input02=", argsLine);
-		} else if (argsLine.toLowerCase().contains("--task02input03") == true) {
-			task02input[3] = thisManager.ImageJ_ReadParameterArray("--task02input03=", argsLine);
-		} else if (argsLine.toLowerCase().contains("--task02input04") == true) {
-			task02input[4] = thisManager.ImageJ_ReadParameterArray("--task02input04=", argsLine);
-		} else if (argsLine.toLowerCase().contains("--task02input05") == true) {
-			task02input[5] = thisManager.ImageJ_ReadParameterArray("--task02input05=", argsLine);
-		} else if (argsLine.toLowerCase().contains("--task02input06") == true) {
-			task02input[6] = thisManager.ImageJ_ReadParameterArray("--task02input06=", argsLine);
-		} else if (argsLine.toLowerCase().contains("--task02input07") == true) {
-			task02input[7] = thisManager.ImageJ_ReadParameterArray("--task02input07=", argsLine);
-		} else if (argsLine.toLowerCase().contains("--task02input08") == true) {
-			task02input[8] = thisManager.ImageJ_ReadParameterArray("--task02input08=", argsLine);
-		} else if (argsLine.toLowerCase().contains("--task02input09") == true) {
-			task02input[9] = thisManager.ImageJ_ReadParameterArray("--task02input09=", argsLine);
-		} else if (argsLine.toLowerCase().contains("--task02imagesdir") == true) {
-			task02imagesDir = thisManager.ImageJ_ReadParameter("--task02imagesdir=",argsLine,0);
-		} else if (argsLine.toLowerCase().contains("--task02images") == true) {
-			task02images = thisManager.ImageJ_ReadParameter("--task02images=",argsLine,0);
-		} 
-    }
-    
+        
     private void LoadFromGUI() {
     	
     	String nFunctionMode = "";
@@ -1162,12 +1157,13 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
     		jcheckbox_task3.setSelected(false);
     	}
     	
-    	jTF_task01cmd.setText(task01cmd);
-    	jTF_task01timeout.setText("" + task01timeout);
-    	jTF_task01retry.setText("" + task01retryFails);
-    	jTF_task01threads.setText("" + task01maxThreads);
-    	jTF_task01img.setText("" + task01images);
-    	jTF_task01imgdir.setText("" + task01imagesDir);
+    	Task task1 = findTask("01");
+    	jTF_task01cmd.setText(task1.taskcmd);
+    	jTF_task01timeout.setText("" + task1.tasktimeout);
+    	jTF_task01retry.setText("" + task1.taskretryFails);
+    	jTF_task01threads.setText("" + task1.maxThreads);
+    	jTF_task01img.setText("" + task1.taskimages);
+    	jTF_task01imgdir.setText("" + task1.taskimagesDir);
     	jTF_task01_1.setText("");
     	jTF_task01_2.setText("");
     	jTF_task01_3.setText("");
@@ -1177,12 +1173,12 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
     	jTF_task01_7.setText("");
     	jTF_task01_8.setText("");
     	jTF_task01_9.setText("");
-    	for (int i = 1; i < task01input.length; i++) {
+    	for (int i = 1; i < task1.taskinput.length; i++) {
     		String totalString = "";
-    		if (task01input[i] != null) {
-	    		for (int j = 0; j < task01input[i].length; j++) {
-	    			totalString += task01input[i][j];
-	    			if (j < task01input[i].length - 1) {
+    		if (task1.taskinput[i] != null) {
+	    		for (int j = 0; j < task1.taskinput[i].length; j++) {
+	    			totalString += task1.taskinput[i][j];
+	    			if (j < task1.taskinput[i].length - 1) {
 	    				totalString += ",";
 	    			}
 	    		}
@@ -1208,12 +1204,14 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
     		}
     	}
     	
-    	jTF_task02cmd.setText(task02cmd);
-    	jTF_task02timeout.setText("" + task02timeout);
-    	jTF_task02retry.setText("" + task02retryFails);
-    	jTF_task02threads.setText("" + task02maxThreads);
-    	jTF_task02img.setText("" + task02images);
-    	jTF_task02imgdir.setText("" + task02imagesDir);
+    	Task task2 = findTask("02");
+    	
+    	jTF_task02cmd.setText(task2.taskcmd);
+    	jTF_task02timeout.setText("" + task2.tasktimeout);
+    	jTF_task02retry.setText("" + task2.taskretryFails);
+    	jTF_task02threads.setText("" + task2.maxThreads);
+    	jTF_task02img.setText("" + task2.taskimages);
+    	jTF_task02imgdir.setText("" + task2.taskimagesDir);
     	jTF_task02_1.setText("");
     	jTF_task02_2.setText("");
     	jTF_task02_3.setText("");
@@ -1223,12 +1221,12 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
     	jTF_task02_7.setText("");
     	jTF_task02_8.setText("");
     	jTF_task02_9.setText("");
-       	for (int i = 1; i < task02input.length; i++) {
+       	for (int i = 1; i < task2.taskinput.length; i++) {
     		String totalString = "";
-    		if (task02input[i] != null) {
-	    		for (int j = 0; j < task02input[i].length; j++) {
-	    			totalString += task02input[i][j];
-	    			if (j < task02input[i].length - 1) {
+    		if (task2.taskinput[i] != null) {
+	    		for (int j = 0; j < task2.taskinput[i].length; j++) {
+	    			totalString += task2.taskinput[i][j];
+	    			if (j < task2.taskinput[i].length - 1) {
 	    				totalString += ",";
 	    			}
 	    		}
@@ -1495,181 +1493,13 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
 			
 			UtilClass.StatusOutput("Running...", Color.orange);
 			if (functionMode.contains("1") == true) {
-				// if inputData == null and inputDataDir != null, read all image files in that immediate directory
-				UtilClass.DebugOutput("Starting task 01...");
-				if (task01images.length()>0 && task01imagesDir.length()>0) {
-					UtilClass.DebugOutput("Reading image input...");
-					int task01imagesNum = Integer.parseInt(task01images.replace("|", ""));
-					int task01imagesDirNum = Integer.parseInt(task01imagesDir.replace("|", ""));
-					if ((task01input[task01imagesNum] == null || task01input[task01imagesNum].length == 0) && (task01input[task01imagesDirNum] != null)) {
-						File fileDirectory = new File (task01input[task01imagesDirNum][0]);
-						if (fileDirectory.isDirectory() == true) {
-							File[] f = fileDirectory.listFiles(new FilenameFilter() {
-								@Override
-								public boolean accept(File dir, String name) {
-									boolean returnValue = false;
-									if (name.toLowerCase().endsWith(".jpg")
-											|| name.toLowerCase().endsWith(".jpeg")
-											|| name.toLowerCase().endsWith(".png")
-											|| name.toLowerCase().endsWith(".gif")
-											|| name.toLowerCase().endsWith(".tif")
-											|| name.toLowerCase().endsWith(".tiff")) {
-										returnValue = true;
-									}
-									return returnValue;
-								}
-							});
-							task01input[task01imagesNum] = new String[f.length];
-							for (int i = 0; i < f.length; i++) {
-								task01input[task01imagesNum][i] = f[i].getName();
-							}
-						}	
-					}
-				} else {
-					task01images = "-1";
-					task01imagesDir = "-1";
-				}
-				if (printParam == true) {
-					UtilClass.DebugOutput("****These are the recognized input parameters (if not specified by the user, these are the defaults).****");
-					UtilClass.DebugOutput("gui = " + gui);
-					UtilClass.DebugOutput("functionMode = " + functionMode);
-					UtilClass.DebugOutput("task01maxThreads = " + task01maxThreads);
-					UtilClass.DebugOutput("task01timeout = " + task01timeout);
-					UtilClass.DebugOutput("task01retryFails = " + task01retryFails);
-					UtilClass.DebugOutput("task01cmd = " + task01cmd);
-					UtilClass.DebugOutput("task01imagesDir = " + task01imagesDir);
-					UtilClass.DebugOutput("task01images = " + task01images);
-					for (int a = 0; a < task01input.length; a++) {
-						if (task01input[a] != null) {
-							UtilClass.DebugOutput("task01input0" + a + " = ");
-							for (int b = 0; b < task01input[a].length; b++) {
-								UtilClass.DebugOutput(task01input[a][b]);
-								if (b < task01input[a].length - 1) {
-									UtilClass.DebugOutput(", ");
-								}
-							}
-							UtilClass.DebugOutput("\n");
-						}
-					}
-					UtilClass.DebugOutput("****End of input parameters.****\n\n");
-				}
-				thisManager.task01maxThreads = task01maxThreads;
-				thisManager.task01timeout = task01timeout;
-				thisManager.task01retryFails = task01retryFails;
-				thisManager.task01cmd = task01cmd;
-				thisManager.task01input = task01input;
-				thisManager.task01images = Integer.parseInt(task01images.replace("|", ""));
-				thisManager.task01imagesDir = Integer.parseInt(task01imagesDir.replace("|", ""));
-				UtilClass.DebugOutput("Begin running...");
-				if (resultStatus >= 0) {
-					//resultStatus = thisManager.Initialize_Start();
-					if (thisManager.task01images == -1 && thisManager.task01imagesDir == -1) {
-						UtilClass.DebugOutput("Running Single Thread Task 1");
-						//resultStatus = thisManager.RunTask01SingleThread();
-						resultStatus = thisManager.RunGenericTask("01",true);
-					} else {
-						UtilClass.DebugOutput("Running Generic Task 1");
-						resultStatus = thisManager.RunGenericTask("01", false);
-					}
-					UtilClass.DebugOutput("ResultStatus = " + resultStatus);
-				} else {
-					//thisManager.Initialize_Start();
-					/*if (thisManager.task01images == -1 && thisManager.task01imagesDir == -1) {
-						thisManager.RunTask01SingleThread();
-					} else {
-						thisManager.RunTask01();
-					}*/
-				}
+				Task task01 = findTask("01");
+				thisManager.executeTask(task01);
 			}
-			/*if (cancelRequest == 1) {
-				UtilClass.DebugOutput("Requested to cancel. Do not proceed to next process.");
-				cancelRequest = 0;
-				return -2;
-			}*/
 			if (functionMode.contains("2") == true) {
-				if (task02images.length()>0 && task02imagesDir.length()>0) {
-					int task02imagesNum = Integer.parseInt(task02images.replace("|", ""));
-					int task02imagesDirNum = Integer.parseInt(task02imagesDir.replace("|", ""));
-					if ((task02input[task02imagesNum] == null || task02input[task02imagesNum].length == 0) && (task02input[task02imagesDirNum] != null)) {
-						File fileDirectory = new File (task02input[task02imagesDirNum][0]);
-						if (fileDirectory.isDirectory() == true) {
-							File[] f = fileDirectory.listFiles(new FilenameFilter() {
-								@Override
-								public boolean accept(File dir, String name) {
-									boolean returnValue = false;
-									if (name.toLowerCase().endsWith(".jpg")
-											|| name.toLowerCase().endsWith(".jpeg")
-											|| name.toLowerCase().endsWith(".png")
-											|| name.toLowerCase().endsWith(".gif")
-											|| name.toLowerCase().endsWith(".tif")
-											|| name.toLowerCase().endsWith(".tiff")) {
-										returnValue = true;
-									}
-									return returnValue;
-								}
-							});
-							task02input[task02imagesNum] = new String[f.length];
-							for (int i = 0; i < f.length; i++) {
-								task02input[task02imagesNum][i] = f[i].getName();
-							}
-						}	
-					}
-				} else {
-					task02images = "-1";
-					task02imagesDir = "-1";
-				}
-				if (printParam == true) {
-					UtilClass.DebugOutput("****These are the recognized input parameters (if not specified by the user, these are the defaults).****");
-					UtilClass.DebugOutput("task02maxThreads = " + task02maxThreads);
-					UtilClass.DebugOutput("task02timeout = " + task02timeout);
-					UtilClass.DebugOutput("task02retryFails = " + task02retryFails);
-					UtilClass.DebugOutput("task02cmd = " + task02cmd);
-					UtilClass.DebugOutput("task02imagesDir = " + task02imagesDir);
-					UtilClass.DebugOutput("task02images = " + task02images);
-					for (int a = 0; a < task02input.length; a++) {
-						if (task02input[a] != null) {
-							UtilClass.DebugOutput("task02input0" + a + " = ");
-							for (int b = 0; b < task02input[a].length; b++) {
-								UtilClass.DebugOutput(task02input[a][b]);
-								if (b < task02input[a].length - 1) {
-									UtilClass.DebugOutput(", ");
-								}
-							}
-							UtilClass.DebugOutput("\n");
-						}
-					}
-					UtilClass.DebugOutput("****End of input parameters.****\n\n");
-				}
-				thisManager.task02maxThreads = task02maxThreads;
-				thisManager.task02timeout = task02timeout;
-				thisManager.task02retryFails = task02retryFails;
-				thisManager.task02cmd = task02cmd;
-				thisManager.task02input = task02input;
-				thisManager.task02images = Integer.parseInt(task02images.replace("|", ""));
-				thisManager.task02imagesDir = Integer.parseInt(task02imagesDir.replace("|", ""));
-				if (resultStatus >= 0) {
-					//resultStatus = thisManager.ImageJ_StartJobs();
-					if (thisManager.task02images == -1 && thisManager.task02imagesDir == -1) {
-						//resultStatus = thisManager.RunTask02SingleThread();
-						resultStatus = thisManager.RunGenericTask("02", true);
-					} else {
-						resultStatus = thisManager.RunGenericTask("02", false);
-					}
-					UtilClass.DebugOutput("ResultStatus = " + resultStatus);
-				} else {
-					//thisManager.ImageJ_StartJobs();
-					/*if (thisManager.task02images == -1 && thisManager.task02imagesDir == -1) {
-						thisManager.RunTask02SingleThread();
-					} else {
-						thisManager.RunTask02();
-					}*/
-				}
-			} 
-			/*if (cancelRequest == 1) {
-				UtilClass.DebugOutput("Requested to cancel. Do not proceed to next process.");
-				cancelRequest = 0;
-				return -2;
-			}*/
+				Task task02 = findTask("02");
+				thisManager.executeTask(task02);
+			}
 			if (functionMode.contains("3") == true) {
 				if (resultStatus >= 0) {
 					resultStatus = thisManager.CombineCSV_Start();
