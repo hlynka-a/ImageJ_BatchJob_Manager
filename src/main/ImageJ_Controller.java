@@ -24,34 +24,43 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class ImageJ_Manager {
+public class ImageJ_Controller {
 	
 	// input parameters the user can define, to be passed to instance of program
-	String paramFile = null;	//filepath
-	boolean gui = true;
-	boolean printParam = false;
-	String functionMode = "1";		// example: 12	=> task 1 and task 2, in this order
-	List<String> functionModeList = new ArrayList<String>();
-	List<Task> tasks = new ArrayList<Task>();
+	private String paramFile = null;	//filepath
+	private boolean gui = true;
+	private boolean printParam = false;
+	private String functionMode = "1";		// example: 12	=> task 1 and task 2, in this order
+	private List<String> functionModeList = new ArrayList<String>();
+	private List<Task> tasks = new ArrayList<Task>();
+	private ImageJ_Jobs_GUI view;
 	
-	static ImageJ_Manager thisManager = new ImageJ_Manager();
+	public boolean getGui() {
+		return this.gui;
+	}
 	
+	public String getFunctionMode() {
+		return this.functionMode;
+	}
+	
+	public ImageJ_Controller(ImageJ_Jobs_GUI view, boolean gui, String functionMode) {
+		this.view = view;
+		this.gui = gui;
+		this.functionMode = functionMode;
+	}
 
-	public static void main (String[] args) {
-		
-		
-		
+	public void processArgs(String[] args) {
 		if (args != null && args.length != 0) {
 			for (int i = 0; i < args.length; i++) {
 				if (args[i].toLowerCase().contains("--help") == true) {
 					// UPDATE: Generalized into assuming 3 different jobs, with better support for how variable arguements will be handled.
-					thisManager.PrintHelpDocs(UtilClass.version);
+					PrintHelpDocs(UtilClass.version);
 					return;
 				}
 			}
 			for (int i = 0; i < args.length; i++) {
 				if (args[i].toLowerCase().contains("--printparamfile") == true) {
-					thisManager.PrintExampleParamFile();
+					PrintExampleParamFile();
 					return;
 				}
 			}
@@ -67,7 +76,7 @@ public class ImageJ_Manager {
 							String argsLine = readFile.nextLine();
 							allArgs.add(argsLine);
 						}
-						thisManager.processArgs(allArgs);
+						processInputParameters(allArgs);
 						readFile.close();
 					} catch (Exception e) {
 						UtilClass.DebugOutput("ERROR: Input parameter '--paramFile' recognized, but issue parsing out value.");
@@ -80,11 +89,11 @@ public class ImageJ_Manager {
 			
 			//change array of args to list of args
 			List<String> allArgs = Arrays.asList(args);
-			thisManager.processArgs(allArgs);
+			processInputParameters(allArgs);
 
 			for (int i = 0; i < args.length; i++) {
 				if (args[i].toLowerCase().contains("--printparam") == true && args[i].toLowerCase().contains("--printparamfile") == false) {
-					thisManager.printParam = true;
+					printParam = true;
 				}
 			}
 		} else {
@@ -92,189 +101,11 @@ public class ImageJ_Manager {
 			UtilClass.DebugOutput("(Run again with parameter '--help' to print out parameter options and other information.)");
 			UtilClass.DebugOutput("(Run again with parameter '--printParam' to print out default or specified parameters for this execution.)");
 		}
-		
-		//thisManager.gui = false;
-		
-		if (thisManager.gui == true) {
-			ImageJ_Jobs_GUI guiManager = new ImageJ_Jobs_GUI();
-			guiManager.StartGUI();
-			return;
-		}
-		
-		UtilClass.DebugOutput("Starting up ImageJ Batch Job Handler (or whatever software we're launching multiple instances of) in 2 seconds.");
-		UtilClass.DebugOutput("VERSION: " + UtilClass.version);
-		UtilClass.DebugOutput("---");
-		try {
-			TimeUnit.SECONDS.sleep(2);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		
-
-		
-
-		
-		//If this is true, we should have a Task that is task1
-		if (thisManager.functionMode.contains("1") == true) {
-			Task task01 = thisManager.findTask("01");
-			thisManager.executeTask(task01);
-		}
-			
-		if (thisManager.functionMode.contains("2") == true) {
-			Task task02 = thisManager.findTask("02");
-			thisManager.executeTask(task02);
-		}
-			
-		if (thisManager.functionMode.contains("3") == true) {
-			thisManager.CombineCSV_Start();
-		}
-		
-		
-		UtilClass.DebugOutput("---");
-		UtilClass.DebugOutput("Finished, closed.");
 	}
 	
 	
-	public ImageJ_Manager() {
+	public ImageJ_Controller() {
 		
-	}
-	
-	public void executeTask(Task task) {
-		UtilClass.DebugOutput("Inside execute task");
-		if (task.taskimages.length()>0 && task.taskimagesDir.length()>0) {
-			UtilClass.DebugOutput("Inside task images > 0");
-			int taskimagesNum = Integer.parseInt(task.taskimages.replace("|", ""));
-			int taskimagesDirNum = Integer.parseInt(task.taskimagesDir.replace("|", ""));
-			UtilClass.DebugOutput("taskimagesNum:" + taskimagesNum);
-			if (taskimagesNum == -1 && taskimagesDirNum == -1) {
-				UtilClass.DebugOutput("no image input");
-				// assume no image input, just run as 1 job with literal command.
-			}
-			else if ((task.taskinput[taskimagesNum] == null || task.taskinput[taskimagesNum].length == 0) && (task.taskinput[taskimagesDirNum] != null)) {
-				// get input images list, used to determine how many jobs need to be done (assume 1 image per job) 
-				File fileDirectory = new File (task.taskinput[taskimagesDirNum][0]);
-				if (fileDirectory.isDirectory() == true) {
-					File[] f = fileDirectory.listFiles(new FilenameFilter() {
-						@Override
-						public boolean accept(File dir, String name) {
-							boolean returnValue = false;
-							if (name.toLowerCase().endsWith(".jpg")
-									|| name.toLowerCase().endsWith(".jpeg")
-									|| name.toLowerCase().endsWith(".png")
-									|| name.toLowerCase().endsWith(".gif")
-									|| name.toLowerCase().endsWith(".tif")
-									|| name.toLowerCase().endsWith(".tiff")) {
-								returnValue = true;
-							}
-							return returnValue;
-						}
-					});
-					task.taskinput[taskimagesNum] = new String[f.length];
-					for (int i = 0; i < f.length; i++) {
-						task.taskinput[taskimagesNum][i] = f[i].getName();
-					}
-				}	
-			}
-		}
-		if (thisManager.printParam == true) {
-			String taskString = "task" + task.taskNumber;
-			UtilClass.DebugOutput("****These are the recognized input parameters (if not specified by the user, these are the defaults).****");
-			UtilClass.DebugOutput("gui = " + thisManager.gui);
-			UtilClass.DebugOutput("functionMode = " + thisManager.functionMode);
-			UtilClass.DebugOutput(taskString + "maxThreads = " + task.maxThreads);
-			UtilClass.DebugOutput(taskString + "timeout = " + task.tasktimeout);
-			UtilClass.DebugOutput(taskString + "retryFails = " + task.taskretryFails);
-			UtilClass.DebugOutput(taskString + "cmd = " + task.taskcmd);
-			UtilClass.DebugOutput(taskString + "imagesDir = " + task.taskimagesDir);
-			UtilClass.DebugOutput(taskString + "images = " + task.taskimages);
-			for (int a = 0; a < task.taskinput.length; a++) {
-				if (task.taskinput[a] != null) {
-					UtilClass.DebugOutput(taskString + "input0" + a + " = ");
-					for (int b = 0; b < task.taskinput[a].length; b++) {
-						UtilClass.DebugOutput(task.taskinput[a][b]);
-						if (b < task.taskinput[a].length - 1) {
-							UtilClass.DebugOutput(", ");
-						}
-					}
-					UtilClass.DebugOutput("\n");
-				}
-			}
-			UtilClass.DebugOutput("****End of input parameters.****\n\n");
-		}
-		int taskImages = Integer.parseInt(task.taskimages.replace("|", ""));			//indicating variable 1 - 9, should be a number
-		int imagesDir = Integer.parseInt(task.taskimagesDir.replace("|", ""));
-		//thisManager.ImageJ_StartJobs();
-		if (taskImages == -1 && imagesDir == -1) {
-			UtilClass.DebugOutput("Running generic task with true");
-			thisManager.RunGenericTask(task.taskNumber, true);
-		} else {
-			UtilClass.DebugOutput("Running generic task with false");
-			thisManager.RunGenericTask(task.taskNumber, false);
-		}
-	}
-	
-	public Task findTask(String number) {
-		for(int i=0; i < tasks.size(); i++) {
-			UtilClass.DebugOutput("Task:" + tasks.get(i).taskNumber);
-		}
-		for(int i=0; i < tasks.size(); i++) {
-			if(tasks.get(i).taskNumber.equals(number)) {
-				UtilClass.DebugOutput("Returning task: " + tasks.get(i).taskNumber);
-				return tasks.get(i);
-			}
-		}
-		UtilClass.DebugOutput("Could not find task with number " + number);
-		return new Task();
-	}
-	
-	
-	public void processArgs(List<String> args) {
-		//First, deal with the variables that don't have to do with tasks
-		for (int i=0; i < args.size(); i++) {
-			String currentArg = args.get(i);
-			if (currentArg.toLowerCase().contains("--gui") == true) {
-				gui = Boolean.parseBoolean(thisManager.ImageJ_ReadParameter("--gui=",currentArg,2));
-			} else if (currentArg.toLowerCase().contains("--functionmode") == true) {
-				functionMode = thisManager.ImageJ_ReadParameter("--functionmode=",currentArg,0);
-				functionModeList = Arrays.asList(functionMode.split(""));
-			}
-		}
-		//Next, deal with the tasks- make new tasks for each one in the map, and add it to the list of overall tasks
-		Map<String, List<String>> taskMap = thisManager.processTaskParams(args);
-		for(String task: taskMap.keySet()) {
-			UtilClass.DebugOutput("Task: " + task);
-		}
-		for (String task : taskMap.keySet()) {
-			List<String> taskWords = taskMap.get(task);
-			UtilClass.DebugOutput("Task number: " + task);
-			Task t = new Task(task, taskWords);
-			tasks.add(t);
-			UtilClass.DebugOutput("Task added: " + task);
-		}
-		
-	}
-	
-	public Map<String, List<String>> processTaskParams(List<String> args) {
-		List<String> taskWords = new ArrayList<String>();
-		for (int i=0; i < args.size(); i++) {
-			if(args.get(i).toLowerCase().contains("--task") == true) {
-				taskWords.add(args.get(i));
-			}
-		}
-		Map<String, List<String>> taskMap = new HashMap<String, List<String>>();
-		for (int i=0; i < taskWords.size(); i++) {
-			String taskWord = taskWords.get(i);
-			//this is not a great way to code this, but the task number is index 6-8 of the word
-			String taskNumber = taskWord.substring(6,8);
-			if(taskMap.containsKey(taskNumber)==true) {
-				taskMap.get(taskNumber).add(taskWord);
-			}else {
-				List<String> words = new ArrayList<String>();
-				words.add(taskWord);
-				taskMap.put(taskNumber, words);
-			}
-		}
-		return taskMap;
 	}
 	
 	public void PrintHelpDocs(String version) {
@@ -333,44 +164,155 @@ public class ImageJ_Manager {
 		UtilClass.DebugOutput("Finished.");
 	}
 	
-	public String ImageJ_ReadParameter(String removeString, String inputArg, int type) {
-		// type [0 = string, 1 = int, 2 = boolean]
-		String returnValue = "";
-		//System.out.println(removeString);
-		try {
-			returnValue = inputArg.toLowerCase().replace(removeString, "");
-			if (type == 0) {
-				
-			} else if (type == 1) {
-				//System.out.println(removeString + " ___ " + inputArg);
-				//System.out.println(">>>>" + returnValue);
-				int testInt = Integer.parseInt(returnValue);
-			} else if (type == 2) {
-				boolean testBool = Boolean.parseBoolean(returnValue);
+	public void processInputParameters(List<String> args) {
+		//First, deal with the variables that don't have to do with tasks
+		for (int i=0; i < args.size(); i++) {
+			String currentArg = args.get(i);
+			if (currentArg.toLowerCase().contains("--gui") == true) {
+				gui = Boolean.parseBoolean(Utilities.ImageJ_ReadParameter("--gui=",currentArg,2));
+			} else if (currentArg.toLowerCase().contains("--functionmode") == true) {
+				functionMode = Utilities.ImageJ_ReadParameter("--functionmode=",currentArg,0);
+				functionModeList = Arrays.asList(functionMode.split(""));
 			}
-		} catch (Exception e) {
-			UtilClass.DebugOutput("ERROR: Input parameter " + removeString + " recognized, but issue parsing out value.");
-			e.printStackTrace();
 		}
-		UtilClass.DebugOutput(">>>> read parameter -> " + removeString + " = " + returnValue);
-		return returnValue;
+		//Next, deal with the tasks- make new tasks for each one in the map, and add it to the list of overall tasks
+		Map<String, List<String>> taskMap = processTaskParams(args);
+		for(String task: taskMap.keySet()) {
+			UtilClass.DebugOutput("Task: " + task);
+		}
+		for (String task : taskMap.keySet()) {
+			List<String> taskWords = taskMap.get(task);
+			UtilClass.DebugOutput("Task number: " + task);
+			Task t = new Task(task, taskWords);
+			tasks.add(t);
+			UtilClass.DebugOutput("Task added: " + task);
+		}
+		
 	}
 	
-	public String[] ImageJ_ReadParameterArray(String removeString, String inputArg) {
-		String [] returnValue = null;
-		try {
-			inputArg = inputArg.toLowerCase().replace(removeString, "");
-			returnValue = inputArg.split(",");
-		} catch (Exception e) {
-			UtilClass.DebugOutput("ERROR: Input parameter ' " + removeString + " ' recognized, but issue parsing out value.");
-			e.printStackTrace();
+	public Map<String, List<String>> processTaskParams(List<String> args) {
+		List<String> taskWords = new ArrayList<String>();
+		for (int i=0; i < args.size(); i++) {
+			if(args.get(i).toLowerCase().contains("--task") == true) {
+				taskWords.add(args.get(i));
+			}
 		}
-		UtilClass.DebugOutput(">>>> read parameter -> " + removeString + " = ");
-		for(int i=0; i < returnValue.length; i++) {
-			UtilClass.DebugOutput("\t" + returnValue[i]);
+		Map<String, List<String>> taskMap = new HashMap<String, List<String>>();
+		for (int i=0; i < taskWords.size(); i++) {
+			String taskWord = taskWords.get(i);
+			//this is not a great way to code this, but the task number is index 6-8 of the word
+			String taskNumber = taskWord.substring(6,8);
+			if(taskMap.containsKey(taskNumber)==true) {
+				taskMap.get(taskNumber).add(taskWord);
+			}else {
+				List<String> words = new ArrayList<String>();
+				words.add(taskWord);
+				taskMap.put(taskNumber, words);
+			}
 		}
-		return returnValue;
+		return taskMap;
 	}
+	
+	
+	
+	public void executeTask(Task task) {
+		UtilClass.DebugOutput("Inside execute task");
+		if (task.taskimages.length()>0 && task.taskimagesDir.length()>0) {
+			UtilClass.DebugOutput("Inside task images > 0");
+			int taskimagesNum = Integer.parseInt(task.taskimages.replace("|", ""));
+			int taskimagesDirNum = Integer.parseInt(task.taskimagesDir.replace("|", ""));
+			UtilClass.DebugOutput("taskimagesNum:" + taskimagesNum);
+			if (taskimagesNum == -1 && taskimagesDirNum == -1) {
+				UtilClass.DebugOutput("no image input");
+				// assume no image input, just run as 1 job with literal command.
+			}
+			else if ((task.taskinput[taskimagesNum] == null || task.taskinput[taskimagesNum].length == 0) && (task.taskinput[taskimagesDirNum] != null)) {
+				// get input images list, used to determine how many jobs need to be done (assume 1 image per job) 
+				File fileDirectory = new File (task.taskinput[taskimagesDirNum][0]);
+				if (fileDirectory.isDirectory() == true) {
+					File[] f = fileDirectory.listFiles(new FilenameFilter() {
+						@Override
+						public boolean accept(File dir, String name) {
+							boolean returnValue = false;
+							if (name.toLowerCase().endsWith(".jpg")
+									|| name.toLowerCase().endsWith(".jpeg")
+									|| name.toLowerCase().endsWith(".png")
+									|| name.toLowerCase().endsWith(".gif")
+									|| name.toLowerCase().endsWith(".tif")
+									|| name.toLowerCase().endsWith(".tiff")) {
+								returnValue = true;
+							}
+							return returnValue;
+						}
+					});
+					task.taskinput[taskimagesNum] = new String[f.length];
+					for (int i = 0; i < f.length; i++) {
+						task.taskinput[taskimagesNum][i] = f[i].getName();
+					}
+				}	
+			}
+		}
+		if (printParam == true) {
+			String taskString = "task" + task.taskNumber;
+			UtilClass.DebugOutput("****These are the recognized input parameters (if not specified by the user, these are the defaults).****");
+			UtilClass.DebugOutput("gui = " + gui);
+			UtilClass.DebugOutput("functionMode = " + functionMode);
+			UtilClass.DebugOutput(taskString + "maxThreads = " + task.maxThreads);
+			UtilClass.DebugOutput(taskString + "timeout = " + task.tasktimeout);
+			UtilClass.DebugOutput(taskString + "retryFails = " + task.taskretryFails);
+			UtilClass.DebugOutput(taskString + "cmd = " + task.taskcmd);
+			UtilClass.DebugOutput(taskString + "imagesDir = " + task.taskimagesDir);
+			UtilClass.DebugOutput(taskString + "images = " + task.taskimages);
+			for (int a = 0; a < task.taskinput.length; a++) {
+				if (task.taskinput[a] != null) {
+					UtilClass.DebugOutput(taskString + "input0" + a + " = ");
+					for (int b = 0; b < task.taskinput[a].length; b++) {
+						UtilClass.DebugOutput(task.taskinput[a][b]);
+						if (b < task.taskinput[a].length - 1) {
+							UtilClass.DebugOutput(", ");
+						}
+					}
+					UtilClass.DebugOutput("\n");
+				}
+			}
+			UtilClass.DebugOutput("****End of input parameters.****\n\n");
+		}
+		int taskImages = Integer.parseInt(task.taskimages.replace("|", ""));			//indicating variable 1 - 9, should be a number
+		int imagesDir = Integer.parseInt(task.taskimagesDir.replace("|", ""));
+		//thisManager.ImageJ_StartJobs();
+		if (taskImages == -1 && imagesDir == -1) {
+			UtilClass.DebugOutput("Running generic task with true");
+			RunGenericTask(task.taskNumber, true);
+		} else {
+			UtilClass.DebugOutput("Running generic task with false");
+			RunGenericTask(task.taskNumber, false);
+		}
+	}
+	
+	public Task findTask(String number) {
+		for(int i=0; i < tasks.size(); i++) {
+			UtilClass.DebugOutput("Task:" + tasks.get(i).taskNumber);
+		}
+		for(int i=0; i < tasks.size(); i++) {
+			if(tasks.get(i).taskNumber.equals(number)) {
+				UtilClass.DebugOutput("Returning task: " + tasks.get(i).taskNumber);
+				return tasks.get(i);
+			}
+		}
+		UtilClass.DebugOutput("Could not find task with number " + number);
+		return new Task();
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+
+	
+	
 	
 	/*String progCommand = "";
 	String progDirectory = "";
@@ -458,7 +400,7 @@ public class ImageJ_Manager {
 	public int RunGenericTask(String taskNumber, boolean singleThread) {
 		
 		
-		Task task = thisManager.findTask(taskNumber);
+		Task task = findTask(taskNumber);
 		//get info from GUI
 		//populateListsFromGUI();
 		

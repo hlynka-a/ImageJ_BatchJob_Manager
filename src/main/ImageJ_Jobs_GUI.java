@@ -915,119 +915,13 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
     }
     
     int currentlyRunning = 0;	//0 = not executing, 1 = in the middle of executing
-    
-//	String paramFile = null;	//filepath
-//	boolean gui = true;
-//	boolean printParam = false;
-//	String functionMode = "1";		// example: 12	=> task 1 and task 2, in this order
-//	List<String> functionModeList = new ArrayList<String>();
-//	List<Task> tasks = new ArrayList<Task>();
 	
-	int task01maxThreads = 4;
-	int task01timeout = 60000;
-	int task01retryFails = 2;
-	String task01cmd = "||1||ImageJ-win64.exe --file-name ||2||||3|| -macro ||4||||5||";
-	String [][] task01input = new String[10][];
-	String task01imagesDir = "";
-	String task01images = "";
 	
-	int task02maxThreads = 4;
-	int task02timeout = 60000;
-	int task02retryFails = 2;
-	String task02cmd = "||1||ImageJ-win64.exe --file-name ||2||||3|| -macro ||4||||5||";
-	String[][] task02input = new String[10][];
-	String task02imagesDir = "";
-	String task02images = "";
 	
-	public Task findTask(String number) {
-		for(int i=0; i < thisManager.tasks.size(); i++) {
-			UtilClass.DebugOutput("Task:" + thisManager.tasks.get(i).taskNumber);
-		}
-		for(int i=0; i < thisManager.tasks.size(); i++) {
-			if(thisManager.tasks.get(i).taskNumber.equals(number)) {
-				UtilClass.DebugOutput("Returning task: " + thisManager.tasks.get(i).taskNumber);
-				return thisManager.tasks.get(i);
-			}
-		}
-		UtilClass.DebugOutput("Could not find task with number " + number);
-		return new Task();
-	}
 	
-	public void processArgs(List<String> args) {
-		//First, deal with the variables that don't have to do with tasks
-		for (int i=0; i < args.size(); i++) {
-			String currentArg = args.get(i);
-			if (currentArg.toLowerCase().contains("--gui") == true) {
-				thisManager.gui = Boolean.parseBoolean(thisManager.ImageJ_ReadParameter("--gui=",currentArg,2));
-			} else if (currentArg.toLowerCase().contains("--functionmode") == true) {
-				thisManager.functionMode = thisManager.ImageJ_ReadParameter("--functionmode=",currentArg,0);
-				thisManager.functionModeList = Arrays.asList(thisManager.functionMode.split(""));
-			}
-		}
-		//Next, deal with the tasks- make new tasks for each one in the map if it's not already in the map, and add it to the list of overall tasks
-		Map<String, List<String>> taskMap = processTaskParams(args);
-		for(String task: taskMap.keySet()) {
-			UtilClass.DebugOutput("Task: " + task);
-		}
-		List<Task> newTasks = new ArrayList<Task>();
-		for (String task : taskMap.keySet()) {
-			List<String> taskWords = taskMap.get(task);
-			UtilClass.DebugOutput("Task number: " + task);
-			
-			Task t = new Task(task, taskWords);
-			newTasks.add(t);
-			UtilClass.DebugOutput("Task added: " + task);
-		}
-		List<Task> finalTasks = new ArrayList<Task>();
-		for(Task oldTask : thisManager.tasks) {
-			String currentTaskNum = oldTask.taskNumber;
-			boolean foundTask = false;
-			for(Task newTask : newTasks) {
-				if(newTask.taskNumber.equals(currentTaskNum)) {
-					finalTasks.add(newTask);
-					foundTask = true;
-				}
-			}
-			if(foundTask == false) {
-				finalTasks.add(oldTask);
-			}
-		}
-		thisManager.tasks.clear();
-		for(Task t : finalTasks) {
-			thisManager.tasks.add(t);
-		}
-		
-	}
 	
-	public Map<String, List<String>> processTaskParams(List<String> args) {
-		List<String> taskWords = new ArrayList<String>();
-		for (int i=0; i < args.size(); i++) {
-			if(args.get(i).toLowerCase().contains("--task") == true) {
-				taskWords.add(args.get(i));
-			}
-		}
-		Map<String, List<String>> taskMap = new HashMap<String, List<String>>();
-		for (int i=0; i < taskWords.size(); i++) {
-			String taskWord = taskWords.get(i);
-			//this is not a great way to code this, but the task number is index 6-8 of the word
-			String taskNumber = taskWord.substring(6,8);
-			if(taskMap.containsKey(taskNumber)==true) {
-				taskMap.get(taskNumber).add(taskWord);
-			}else {
-				List<String> words = new ArrayList<String>();
-				words.add(taskWord);
-				taskMap.put(taskNumber, words);
-			}
-		}
-		//Print the task map before returning
-		for(String task:taskMap.keySet()) {
-			UtilClass.DebugOutput("Task:" + task);
-			for(int i=0; i < taskMap.get(task).size(); i++) {
-				UtilClass.DebugOutput("list object: " + taskMap.get(task).get(i));
-			}
-		}
-		return taskMap;
-	}
+	
+	
     
     private void LoadFile(String filePath, String fileName) {
     	File inputFile = new File(filePath + fileName);
@@ -1727,46 +1621,9 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
     	jpanel_status.setBackground(Color.LIGHT_GRAY);
     }
     
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        /*try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(ImageJ_Jobs_GUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(ImageJ_Jobs_GUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(ImageJ_Jobs_GUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(ImageJ_Jobs_GUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }*/
-        //</editor-fold>
-
-    	ImageJ_Jobs_GUI thisGUI;
-    	thisGUI = new ImageJ_Jobs_GUI();
-    	thisGUI.StartGUI();
-
-    }
-    
     public void StartGUI() {
     	
     	initComponents();
-    	
-    	if (thisManager == null) {
-    		thisManager = new ImageJ_Manager();
-    	}
     	
     	
         /* Create and display the form */
@@ -1781,8 +1638,6 @@ public class ImageJ_Jobs_GUI extends javax.swing.JFrame {
             }
         });
     }
-    
-    public ImageJ_Manager thisManager;
     
 
     // Variables declaration - do not modify                     
