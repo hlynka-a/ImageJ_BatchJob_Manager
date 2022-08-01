@@ -169,9 +169,9 @@ public class ImageJ_Controller {
 		for (int i=0; i < args.size(); i++) {
 			String currentArg = args.get(i);
 			if (currentArg.toLowerCase().contains("--gui") == true) {
-				gui = Boolean.parseBoolean(Utilities.ImageJ_ReadParameter("--gui=",currentArg,2));
+				gui = Boolean.parseBoolean(UtilClass.ImageJ_ReadParameter("--gui=",currentArg,2));
 			} else if (currentArg.toLowerCase().contains("--functionmode") == true) {
-				functionMode = Utilities.ImageJ_ReadParameter("--functionmode=",currentArg,0);
+				functionMode = UtilClass.ImageJ_ReadParameter("--functionmode=",currentArg,0);
 				functionModeList = Arrays.asList(functionMode.split(""));
 			}
 		}

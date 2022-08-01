@@ -29,28 +29,28 @@ public class Task{
 			String removeWord = currentWord.split("=")[0] + "=";
 			removeWord = removeWord.toLowerCase();
 			if (currentWord.toLowerCase().contains("description") == true) {	
-				taskdescription = Utilities.ImageJ_ReadParameter(removeWord,currentWord,0); 
+				taskdescription = UtilClass.ImageJ_ReadParameter(removeWord,currentWord,0); 
 			} else if (currentWord.toLowerCase().contains("maxthreads") == true) {
-				maxThreads = Integer.parseInt(Utilities.ImageJ_ReadParameter(removeWord,currentWord,1));
+				maxThreads = Integer.parseInt(UtilClass.ImageJ_ReadParameter(removeWord,currentWord,1));
 			} else if (currentWord.toLowerCase().contains("timeout") == true) {
-				tasktimeout = Integer.parseInt(Utilities.ImageJ_ReadParameter(removeWord,currentWord,1));
+				tasktimeout = Integer.parseInt(UtilClass.ImageJ_ReadParameter(removeWord,currentWord,1));
 			} else if (currentWord.toLowerCase().contains("retryfails") == true) {
-				taskretryFails = Integer.parseInt(Utilities.ImageJ_ReadParameter(removeWord,currentWord,1));
+				taskretryFails = Integer.parseInt(UtilClass.ImageJ_ReadParameter(removeWord,currentWord,1));
 			} else if (currentWord.toLowerCase().contains("cmd") == true) {
-				taskcmd = Utilities.ImageJ_ReadParameter(removeWord,currentWord,0);
+				taskcmd = UtilClass.ImageJ_ReadParameter(removeWord,currentWord,0);
 			} else if (currentWord.toLowerCase().contains("input") == true) {
 				for (int j=1; j < 10; j++) {
 					String numString = "0"+j;
 					String currentInputWord = "--task" + taskNumber + "input" + numString;
 					if(currentWord.toLowerCase().contains(currentInputWord) == true) {
-						taskinput[j] = Utilities.ImageJ_ReadParameterArray(removeWord, currentWord);
+						taskinput[j] = UtilClass.ImageJ_ReadParameterArray(removeWord, currentWord);
 					}
 				}
 			} else if (currentWord.toLowerCase().contains("imagesdir") == true) {
-				taskimagesDir = Utilities.ImageJ_ReadParameter(removeWord,currentWord,0);
+				taskimagesDir = UtilClass.ImageJ_ReadParameter(removeWord,currentWord,0);
 			} else if (currentWord.toLowerCase().contains("images") == true) {
 				UtilClass.DebugOutput("Task images here:" + currentWord);
-				taskimages = Utilities.ImageJ_ReadParameter(removeWord,currentWord,0);
+				taskimages = UtilClass.ImageJ_ReadParameter(removeWord,currentWord,0);
 			}
 		}
 	}
