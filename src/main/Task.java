@@ -184,7 +184,7 @@ public class Task{
 						String[] newArray = UtilClass.ImageJ_ReadParameterArray(removeWord, currentWord);
 						StringProperty[] propertyArray = new StringProperty[newArray.length];
 						for(int k=0; k < newArray.length; k++) {
-							propertyArray[k].set(newArray[k]);
+							propertyArray[k] = new SimpleStringProperty(newArray[k]);
 						}
 						this.taskinput[j] = propertyArray;
 					}
@@ -204,7 +204,7 @@ public class Task{
 	
 	public String getTaskDataAsString(String[] taskArray) {
 		String totalString = "";
-		for (int i = 1; i < taskArray.length; i++) {
+		for (int i = 0; i < taskArray.length; i++) {
 			totalString +=taskArray[i];
 	    	if (i < taskArray.length - 1) {
 	    		totalString += ",";
