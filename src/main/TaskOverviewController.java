@@ -182,6 +182,109 @@ public class TaskOverviewController {
 			Task task1 = findTask("1", mainApp.getTaskData());
 			task1.setTaskimagesDir(newValue);
 		});
+		
+		//Listeners for text fields Task 2
+		task2timeout.textProperty().addListener((observable, oldValue, newValue) -> {
+			Task task2 = findTask("2", mainApp.getTaskData());
+			task2.setTasktimeout(Integer.valueOf(newValue));
+		});
+		task2retrylimit.textProperty().addListener((observable, oldValue, newValue) -> {
+			Task task2 = findTask("2", mainApp.getTaskData());
+			task2.setTaskretryFails(Integer.valueOf(newValue));
+		});
+		task2maxthreads.textProperty().addListener((observable, oldValue, newValue) -> {
+			Task task2 = findTask("2", mainApp.getTaskData());
+			task2.setMaxThreads(Integer.valueOf(newValue));
+		});
+		task2input1.textProperty().addListener((observable, oldValue, newValue) -> {
+			Task task2 = findTask("2", mainApp.getTaskData());
+			String[] newValueArray = newValue.split(",");
+			StringProperty[] propertyArray = new StringProperty[newValueArray.length];
+			for(int k=0; k < newValueArray.length; k++) {
+				propertyArray[k] = new SimpleStringProperty(newValueArray[k]);
+			}
+			task2.taskinput[1] = propertyArray;
+		});
+		task2input2.textProperty().addListener((observable, oldValue, newValue) -> {
+			Task task2 = findTask("2", mainApp.getTaskData());
+			String[] newValueArray = newValue.split(",");
+			StringProperty[] propertyArray = new StringProperty[newValueArray.length];
+			for(int k=0; k < newValueArray.length; k++) {
+				propertyArray[k] = new SimpleStringProperty(newValueArray[k]);
+			}
+			task2.taskinput[2] = propertyArray;
+		});
+		task2input3.textProperty().addListener((observable, oldValue, newValue) -> {
+			Task task2 = findTask("2", mainApp.getTaskData());
+			String[] newValueArray = newValue.split(",");
+			StringProperty[] propertyArray = new StringProperty[newValueArray.length];
+			for(int k=0; k < newValueArray.length; k++) {
+				propertyArray[k] = new SimpleStringProperty(newValueArray[k]);
+			}
+			task2.taskinput[3] = propertyArray;
+		});
+		task2input4.textProperty().addListener((observable, oldValue, newValue) -> {
+			Task task2 = findTask("2", mainApp.getTaskData());
+			String[] newValueArray = newValue.split(",");
+			StringProperty[] propertyArray = new StringProperty[newValueArray.length];
+			for(int k=0; k < newValueArray.length; k++) {
+				propertyArray[k] = new SimpleStringProperty(newValueArray[k]);
+			}
+			task2.taskinput[4] = propertyArray;
+		});
+		task2input5.textProperty().addListener((observable, oldValue, newValue) -> {
+			Task task2 = findTask("2", mainApp.getTaskData());
+			String[] newValueArray = newValue.split(",");
+			StringProperty[] propertyArray = new StringProperty[newValueArray.length];
+			for(int k=0; k < newValueArray.length; k++) {
+				propertyArray[k] = new SimpleStringProperty(newValueArray[k]);
+			}
+			task2.taskinput[5] = propertyArray;
+		});
+		task2input6.textProperty().addListener((observable, oldValue, newValue) -> {
+			Task task2 = findTask("2", mainApp.getTaskData());
+			String[] newValueArray = newValue.split(",");
+			StringProperty[] propertyArray = new StringProperty[newValueArray.length];
+			for(int k=0; k < newValueArray.length; k++) {
+				propertyArray[k] = new SimpleStringProperty(newValueArray[k]);
+			}
+			task2.taskinput[6] = propertyArray;
+		});
+		task2input7.textProperty().addListener((observable, oldValue, newValue) -> {
+			Task task2 = findTask("2", mainApp.getTaskData());
+			String[] newValueArray = newValue.split(",");
+			StringProperty[] propertyArray = new StringProperty[newValueArray.length];
+			for(int k=0; k < newValueArray.length; k++) {
+				propertyArray[k] = new SimpleStringProperty(newValueArray[k]);
+			}
+			task2.taskinput[7] = propertyArray;
+		});
+		task2input8.textProperty().addListener((observable, oldValue, newValue) -> {
+			Task task2 = findTask("2", mainApp.getTaskData());
+			String[] newValueArray = newValue.split(",");
+			StringProperty[] propertyArray = new StringProperty[newValueArray.length];
+			for(int k=0; k < newValueArray.length; k++) {
+				propertyArray[k] = new SimpleStringProperty(newValueArray[k]);
+			}
+			task2.taskinput[8] = propertyArray;
+		});
+		task2input9.textProperty().addListener((observable, oldValue, newValue) -> {
+			Task task2 = findTask("2", mainApp.getTaskData());
+			String[] newValueArray = newValue.split(",");
+			StringProperty[] propertyArray = new StringProperty[newValueArray.length];
+			for(int k=0; k < newValueArray.length; k++) {
+				propertyArray[k] = new SimpleStringProperty(newValueArray[k]);
+			}
+			task2.taskinput[9] = propertyArray;
+		});
+		task2imageinput.textProperty().addListener((observable, oldValue, newValue) -> {
+			Task task2 = findTask("2", mainApp.getTaskData());
+			task2.setTaskimages(newValue);
+		});
+		task2imagedir.textProperty().addListener((observable, oldValue, newValue) -> {
+			Task task2 = findTask("2", mainApp.getTaskData());
+			task2.setTaskimagesDir(newValue);
+		});
 	}
 	
 	public void setMainApp(MainApp mainApp) {
