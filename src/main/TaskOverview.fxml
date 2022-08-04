@@ -15,8 +15,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-
-<AnchorPane prefHeight="678.0" prefWidth="1000.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/18">
+<AnchorPane prefHeight="678.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.TaskOverviewController">
    <children>
       <VBox layoutX="126.0" layoutY="153.0" prefHeight="655.0" prefWidth="881.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
@@ -39,7 +38,7 @@
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </HBox.margin>
                               </Label>
-                              <TextArea prefHeight="37.0" prefWidth="733.0">
+                              <TextArea fx:id="task1syscmd" prefHeight="37.0" prefWidth="733.0">
                                  <HBox.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </HBox.margin>
@@ -144,72 +143,72 @@
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
                               </Label>
-                              <TextField GridPane.columnIndex="1">
+                              <TextField fx:id="task1timeout" GridPane.columnIndex="1">
                                  <GridPane.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
                               </TextField>
-                              <TextField GridPane.columnIndex="1" GridPane.rowIndex="1">
+                              <TextField fx:id="task1input1" GridPane.columnIndex="1" GridPane.rowIndex="1">
                                  <GridPane.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
                               </TextField>
-                              <TextField GridPane.columnIndex="1" GridPane.rowIndex="2">
+                              <TextField fx:id="task1input4" GridPane.columnIndex="1" GridPane.rowIndex="2">
                                  <GridPane.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
                               </TextField>
-                              <TextField GridPane.columnIndex="1" GridPane.rowIndex="3">
+                              <TextField fx:id="task1input7" GridPane.columnIndex="1" GridPane.rowIndex="3">
                                  <GridPane.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
                               </TextField>
-                              <TextField GridPane.columnIndex="1" GridPane.rowIndex="4">
+                              <TextField fx:id="task1imageinput" GridPane.columnIndex="1" GridPane.rowIndex="4">
                                  <GridPane.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
                               </TextField>
-                              <TextField GridPane.columnIndex="3">
+                              <TextField fx:id="task1retrylimit" GridPane.columnIndex="3">
                                  <GridPane.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
                               </TextField>
-                              <TextField GridPane.columnIndex="3" GridPane.rowIndex="1">
+                              <TextField fx:id="task1input2" GridPane.columnIndex="3" GridPane.rowIndex="1">
                                  <GridPane.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
                               </TextField>
-                              <TextField GridPane.columnIndex="3" GridPane.rowIndex="2">
+                              <TextField fx:id="task1input5" GridPane.columnIndex="3" GridPane.rowIndex="2">
                                  <GridPane.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
                               </TextField>
-                              <TextField GridPane.columnIndex="3" GridPane.rowIndex="3">
+                              <TextField fx:id="task1input8" GridPane.columnIndex="3" GridPane.rowIndex="3">
                                  <GridPane.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
                               </TextField>
-                              <TextField GridPane.columnIndex="3" GridPane.rowIndex="4">
+                              <TextField fx:id="task1imagedir" GridPane.columnIndex="3" GridPane.rowIndex="4">
                                  <GridPane.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
                               </TextField>
-                              <TextField GridPane.columnIndex="5">
+                              <TextField fx:id="task1maxthreads" GridPane.columnIndex="5">
                                  <GridPane.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
                               </TextField>
-                              <TextField GridPane.columnIndex="5" GridPane.rowIndex="1">
+                              <TextField fx:id="task1input3" GridPane.columnIndex="5" GridPane.rowIndex="1">
                                  <GridPane.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
                               </TextField>
-                              <TextField GridPane.columnIndex="5" GridPane.rowIndex="2">
+                              <TextField fx:id="task1input6" GridPane.columnIndex="5" GridPane.rowIndex="2">
                                  <GridPane.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
                               </TextField>
-                              <TextField GridPane.columnIndex="5" GridPane.rowIndex="3">
+                              <TextField fx:id="task1input9" GridPane.columnIndex="5" GridPane.rowIndex="3">
                                  <GridPane.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
@@ -245,7 +244,7 @@
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </HBox.margin>
                               </Label>
-                              <TextArea prefHeight="38.0" prefWidth="732.0">
+                              <TextArea fx:id="task2syscmd" prefHeight="38.0" prefWidth="732.0">
                                  <HBox.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </HBox.margin>
@@ -350,72 +349,72 @@
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
                               </Label>
-                              <TextField GridPane.columnIndex="1">
+                              <TextField fx:id="task2timeout" GridPane.columnIndex="1">
                                  <GridPane.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
                               </TextField>
-                              <TextField GridPane.columnIndex="1" GridPane.rowIndex="1">
+                              <TextField fx:id="task2input1" GridPane.columnIndex="1" GridPane.rowIndex="1">
                                  <GridPane.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
                               </TextField>
-                              <TextField GridPane.columnIndex="1" GridPane.rowIndex="2">
+                              <TextField fx:id="task2input4" GridPane.columnIndex="1" GridPane.rowIndex="2">
                                  <GridPane.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
                               </TextField>
-                              <TextField GridPane.columnIndex="1" GridPane.rowIndex="3">
+                              <TextField fx:id="task2input7" GridPane.columnIndex="1" GridPane.rowIndex="3">
                                  <GridPane.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
                               </TextField>
-                              <TextField GridPane.columnIndex="1" GridPane.rowIndex="4">
+                              <TextField fx:id="task2imageinput" GridPane.columnIndex="1" GridPane.rowIndex="4">
                                  <GridPane.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
                               </TextField>
-                              <TextField GridPane.columnIndex="3">
+                              <TextField fx:id="task2retrylimit" GridPane.columnIndex="3">
                                  <GridPane.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
                               </TextField>
-                              <TextField GridPane.columnIndex="3" GridPane.rowIndex="1">
+                              <TextField fx:id="task2input2" GridPane.columnIndex="3" GridPane.rowIndex="1">
                                  <GridPane.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
                               </TextField>
-                              <TextField GridPane.columnIndex="3" GridPane.rowIndex="2">
+                              <TextField fx:id="task2input5" GridPane.columnIndex="3" GridPane.rowIndex="2">
                                  <GridPane.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
                               </TextField>
-                              <TextField GridPane.columnIndex="3" GridPane.rowIndex="3">
+                              <TextField fx:id="task2input8" GridPane.columnIndex="3" GridPane.rowIndex="3">
                                  <GridPane.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
                               </TextField>
-                              <TextField GridPane.columnIndex="3" GridPane.rowIndex="4">
+                              <TextField fx:id="task2imagedir" GridPane.columnIndex="3" GridPane.rowIndex="4">
                                  <GridPane.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
                               </TextField>
-                              <TextField GridPane.columnIndex="5">
+                              <TextField fx:id="task2maxthreads" GridPane.columnIndex="5">
                                  <GridPane.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
                               </TextField>
-                              <TextField GridPane.columnIndex="5" GridPane.rowIndex="1">
+                              <TextField fx:id="task2input3" GridPane.columnIndex="5" GridPane.rowIndex="1">
                                  <GridPane.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
                               </TextField>
-                              <TextField GridPane.columnIndex="5" GridPane.rowIndex="2">
+                              <TextField fx:id="task2input6" GridPane.columnIndex="5" GridPane.rowIndex="2">
                                  <GridPane.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>
                               </TextField>
-                              <TextField GridPane.columnIndex="5" GridPane.rowIndex="3">
+                              <TextField fx:id="task2input9" GridPane.columnIndex="5" GridPane.rowIndex="3">
                                  <GridPane.margin>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </GridPane.margin>

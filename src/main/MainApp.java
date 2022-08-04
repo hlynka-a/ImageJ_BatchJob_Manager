@@ -3,6 +3,8 @@ package main;
 import java.io.IOException;
 
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
@@ -13,6 +15,18 @@ public class MainApp extends Application {
 	
 	private Stage primaryStage;
 	private BorderPane rootLayout;
+	
+	private ObservableList<Task> taskData = FXCollections.observableArrayList();
+	
+	public MainApp() {
+		//Add sample data
+		taskData.add(new Task("1"));
+		taskData.add(new Task("2"));
+	}
+	
+	public ObservableList<Task> getTaskData(){
+		return taskData;
+	}
 
 	@Override
 	public void start(Stage primaryStage) {
@@ -49,6 +63,10 @@ public class MainApp extends Application {
 			AnchorPane taskOverview = (AnchorPane) loader.load();
 			
 			rootLayout.setCenter(taskOverview);
+			
+			TaskOverviewController controller = loader.getController();
+			controller.setMainApp(this);
+			
 		}catch(IOException e) {
 			e.printStackTrace();
 		}
