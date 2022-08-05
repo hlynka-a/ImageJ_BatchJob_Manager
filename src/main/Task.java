@@ -167,15 +167,15 @@ public class Task{
 			String removeWord = currentWord.split("=")[0] + "=";
 			removeWord = removeWord.toLowerCase();
 			if (currentWord.toLowerCase().contains("description") == true) {	
-				this.taskdescription.set(UtilClass.ImageJ_ReadParameter(removeWord, removeWord, 0));
+				this.taskdescription.set(UtilClass.ImageJ_ReadParameter(removeWord, currentWord, 0));
 			} else if (currentWord.toLowerCase().contains("maxthreads") == true) {
-				this.maxThreads.set(Integer.parseInt(UtilClass.ImageJ_ReadParameter(removeWord, removeWord, 1)));
+				this.maxThreads.set(Integer.parseInt(UtilClass.ImageJ_ReadParameter(removeWord, currentWord, 1)));
 			} else if (currentWord.toLowerCase().contains("timeout") == true) {
-				this.tasktimeout.set(Integer.parseInt(UtilClass.ImageJ_ReadParameter(removeWord, removeWord, 1)));
+				this.tasktimeout.set(Integer.parseInt(UtilClass.ImageJ_ReadParameter(removeWord, currentWord, 1)));
 			} else if (currentWord.toLowerCase().contains("retryfails") == true) {
-				this.taskretryFails.set(Integer.parseInt(UtilClass.ImageJ_ReadParameter(removeWord, removeWord, 1)));
+				this.taskretryFails.set(Integer.parseInt(UtilClass.ImageJ_ReadParameter(removeWord, currentWord, 1)));
 			} else if (currentWord.toLowerCase().contains("cmd") == true) {
-				this.taskcmd.set(UtilClass.ImageJ_ReadParameter(removeWord, removeWord, 0));
+				this.taskcmd.set(UtilClass.ImageJ_ReadParameter(removeWord, currentWord, 0));
 			} else if (currentWord.toLowerCase().contains("input") == true) {
 				for (int j=1; j < 10; j++) {
 					String numString = "0"+j;
@@ -199,13 +199,26 @@ public class Task{
 	}
 	
 	public Task(String taskNumber, List<String> taskWords) {
+		this.taskNumber = taskNumber;
+		this.maxThreads = new SimpleIntegerProperty(1);
+		this.tasktimeout = new SimpleIntegerProperty(60000);
+		this.taskretryFails = new SimpleIntegerProperty(4);
+		this.taskcmd = new SimpleStringProperty("some cmd");
+		this.taskimagesDir = new SimpleStringProperty("-1");
+		this.taskimages = new SimpleStringProperty("-1");
+		this.taskdescription = new SimpleStringProperty("task created to do something");
 		readTaskArgs(taskNumber, taskWords);
 	}
 	
 	public String getTaskDataAsString(String[] taskArray) {
 		String totalString = "";
 		for (int i = 0; i < taskArray.length; i++) {
-			totalString +=taskArray[i];
+			if(taskArray[i] == null) {
+				totalString += "";
+			}
+			else {
+				totalString +=taskArray[i];
+			}
 	    	if (i < taskArray.length - 1) {
 	    		totalString += ",";
 	    	}

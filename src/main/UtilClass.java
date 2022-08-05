@@ -41,7 +41,8 @@ public class UtilClass {
 	public static String ImageJ_ReadParameter(String removeString, String inputArg, int type) {
 		// type [0 = string, 1 = int, 2 = boolean]
 		String returnValue = "";
-		//System.out.println(removeString);
+		System.out.println(inputArg);
+		System.out.println(removeString);
 		try {
 			returnValue = inputArg.toLowerCase().replace(removeString, "");
 			if (type == 0) {

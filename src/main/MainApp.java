@@ -1,6 +1,8 @@
 package main;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -17,25 +19,50 @@ public class MainApp extends Application {
 	private BorderPane rootLayout;
 	
 	private ObservableList<Task> taskData = FXCollections.observableArrayList();
+	private boolean printParam;
+	private boolean gui;
+	private String functionMode;
+	private List<String> functionModeList = new ArrayList<String>();
 	
 	public MainApp() {
-		//Add sample data
-		taskData.add(new Task("1"));
-		taskData.add(new Task("2"));
 	}
 	
 	public ObservableList<Task> getTaskData(){
 		return taskData;
 	}
+	
+	public void setPrintParam(boolean p) {
+		this.printParam = p;
+	}
+	
+	public void setGui(boolean g) {
+		this.gui = g;
+	}
+	
+	public void setFunctionMode(String functionMode) {
+		this.functionMode = functionMode;
+	}
+	
+	public String getFunctionMode() {
+		return this.functionMode;
+	}
+	
+	public void setFunctionModeList(List<String> functionModeList) {
+		this.functionModeList = functionModeList;
+	}
 
 	@Override
 	public void start(Stage primaryStage) {
+		
+		Parameters params = getParameters();
+		List<String> args = params.getRaw();
+		
 		this.primaryStage = primaryStage;
 		this.primaryStage.setTitle("ImageJ_BatchJobHandler");
 		
 		initRootLayout();
 		
-		showTaskOverview();
+		showTaskOverview(args);
 	}
 	
 	//Initializes root layout
@@ -55,7 +82,7 @@ public class MainApp extends Application {
 		}
 	}
 	
-	public void showTaskOverview() {
+	public void showTaskOverview(List<String> arglist) {
 		try {
 			//Load view
 			FXMLLoader loader = new FXMLLoader();
@@ -65,8 +92,19 @@ public class MainApp extends Application {
 			rootLayout.setCenter(taskOverview);
 			
 			TaskOverviewController controller = loader.getController();
-			controller.setMainApp(this);
+			String[] args = arglist.toArray(new String[0]);
 			
+			controller.setMainApp(this);
+			controller.processArgs(args);
+			for(Task t : taskData) {
+				System.out.println("Task" + t.getTaskNumber() + " in list");
+				String taskinput1 = t.getTaskDataAsString(t.getTaskInput(4));
+				System.out.println("taskinput4 is: " + taskinput1);
+				
+			}
+			Task task1 = controller.findTask("01", taskData);
+			Task task2 = controller.findTask("02", taskData);
+			controller.addTaskData(taskData);
 		}catch(IOException e) {
 			e.printStackTrace();
 		}
