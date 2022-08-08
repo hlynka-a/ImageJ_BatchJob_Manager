@@ -647,6 +647,7 @@ public class TaskOverviewController {
 			processThreads[i].threadIndex = i + 1;
 			processThreads[i].threadTotal = taskInputImageLength;
 			String sysCommand = taskCmd;
+			
 			for (int j = 0; j < 10; j++) {
 				if (j != taskImage && taskInput[j] != null) {
 					String[] taskInputString = task.getTaskInput(j);
@@ -658,6 +659,7 @@ public class TaskOverviewController {
 				sysCommand = sysCommand.replace("||" + taskImage + "||", taskInputString[i]);
 			}
 			processThreads[i].sysCommand = sysCommand;
+			//processThreads[i].sysCommand = "C:\\Users\\richeym\\ImageJ_BatchJob\\JavaBatchManager_v1-05_complete\\JavaBatchManager_v1-05_complete\\install_imagej\\fiji-win64\\fiji.app\\imagej-win64.exe";
 			processThreads[i].milisecondsTimeout = taskTimeout;
 		}
 		
