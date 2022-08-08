@@ -207,6 +207,7 @@ public class Task{
 			} else if (currentWord.toLowerCase().contains("images") == true) {
 				UtilClass.DebugOutput("Task images here:" + currentWord);
 				this.taskimages.set(UtilClass.ImageJ_ReadParameter(removeWord,currentWord,0));
+				UtilClass.DebugOutput("Task images after setting: " + this.getTaskImages());
 			}
 		}
 	}

@@ -386,8 +386,8 @@ public class TaskOverviewController {
 		task2input7.setText(task2.getTaskDataAsString(task2.getTaskInput(6)));
 		task2input8.setText(task2.getTaskDataAsString(task2.getTaskInput(7)));
 		task2input9.setText(task2.getTaskDataAsString(task2.getTaskInput(8)));
-		task2imageinput.setText(task1.getTaskImages());
-		task2imagedir.setText(task1.getTaskImagesDir());
+		task2imageinput.setText(task2.getTaskImages());
+		task2imagedir.setText(task2.getTaskImagesDir());
 	}
 	
 	public Task findTask(String number, ObservableList<Task> tasks) {
@@ -565,7 +565,6 @@ public class TaskOverviewController {
 		}
 		for (String task : taskMap.keySet()) {
 			List<String> taskWords = taskMap.get(task);
-			UtilClass.DebugOutput("Task number: " + task);
 			Task t = new Task(task, taskWords);
 			mainApp.getTaskData().add(t);
 			UtilClass.DebugOutput("Task added: " + task);
@@ -611,8 +610,9 @@ public class TaskOverviewController {
 		String taskCmd = task.getTaskCmd();
 		StringProperty[][]taskInput = task.getTaskinput();
 		
-		int taskImage = Integer.parseInt(task.getTaskImages().replace("|", ""));			//indicating variable 1 - 9, should be a number
-		int taskimagesDir = Integer.parseInt(task.getTaskImagesDir().replace("|", ""));
+		//We index these differently, so subtract 1 from the indexes
+		int taskImage = Integer.parseInt(task.getTaskImages().replace("|", ""))-1;			//indicating variable 1 - 9, should be a number
+		int taskimagesDir = Integer.parseInt(task.getTaskImagesDir().replace("|", ""))-1;
 		
 		int taskInputImageLength = 1;
 		if(singleThread == false) {
@@ -878,10 +878,10 @@ public class TaskOverviewController {
 		//thisManager.ImageJ_StartJobs();
 		if (taskImages == -1 && imagesDir == -1) {
 			UtilClass.DebugOutput("Running generic task with true");
-			RunGenericTask(task.taskNumber, true);
+			RunGenericTask(task.getTaskNumber(), true);
 		} else {
 			UtilClass.DebugOutput("Running generic task with false");
-			RunGenericTask(task.taskNumber, false);
+			RunGenericTask(task.getTaskNumber(), false);
 		}
 	}
 	
@@ -903,7 +903,8 @@ public int CombineCSV_Start() {
 		
 		String[] csvFiles = null;
 		Task task2 = findTask("02", mainApp.getTaskData());
-		String[] taskInputArray = task2.getTaskInput(Integer.parseInt(task2.getTaskImagesDir()));
+		int imagesDir = Integer.parseInt(task2.getTaskImagesDir().replace("|", ""));
+		String[] taskInputArray = task2.getTaskInput(imagesDir);
 		if (taskInputArray[0] != null) {
 			File fileDirectory = new File (taskInputArray[0]);
 			if (fileDirectory.isDirectory() == true) {
