@@ -1,12 +1,19 @@
 package main;
 
 import java.io.File;
+import java.io.FileFilter;
+import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -94,6 +101,11 @@ public class TaskOverviewController {
 	
 	
 	private MainApp mainApp;
+	
+	long startExecutionTime = 0;
+	ImageJ_Thread [] processThreads;
+	ExecutorService execService;
+	int cancelRequest = 0;
 	
 	public TaskOverviewController() {
 		
@@ -315,7 +327,19 @@ public class TaskOverviewController {
 	
 	@FXML
 	private void handleExecute() {
-		
+		if (mainApp.getFunctionMode().contains("1") == true) {
+			Task task01 = this.findTask("01", mainApp.getTaskData());
+			executeTask(task01);
+		}
+			
+		if (mainApp.getFunctionMode().contains("2") == true) {
+			Task task02 = this.findTask("02", mainApp.getTaskData());
+			executeTask(task02);
+		}
+			
+		if (mainApp.getFunctionMode().contains("3") == true) {
+			CombineCSV_Start();
+		}
 	}
 	
 	@FXML
@@ -570,5 +594,379 @@ public class TaskOverviewController {
 			}
 		}
 		return taskMap;
+	}
+	
+	public int RunGenericTask(String taskNumber, boolean singleThread) {
+		
+		
+		Task task = findTask(taskNumber, mainApp.getTaskData());
+		//get info from GUI
+		//populateListsFromGUI();
+		
+		//Get all the variables relevant to this task
+		String taskDescription = task.getTaskDescription();
+		int taskMaxThreadCount = task.getMaxThreads();
+		int taskTimeout = task.getTaskTimeout();
+		int taskRetryFail = task.getTaskRetryFails();
+		String taskCmd = task.getTaskCmd();
+		StringProperty[][]taskInput = task.getTaskinput();
+		
+		int taskImage = Integer.parseInt(task.getTaskImages().replace("|", ""));			//indicating variable 1 - 9, should be a number
+		int taskimagesDir = Integer.parseInt(task.getTaskImagesDir().replace("|", ""));
+		
+		int taskInputImageLength = 1;
+		if(singleThread == false) {
+			taskInputImageLength = taskInput[taskImage].length;
+		}
+		
+		UtilClass.DebugOutput("TASK " + taskNumber + ":");
+		
+		UtilClass.DebugOutput(taskDescription);
+		
+		UtilClass.DebugOutput("System OS: " + System.getProperty("os.name"));
+		UtilClass.DebugOutput("Total number of system cores: " + Runtime.getRuntime().availableProcessors());
+		UtilClass.DebugOutput("Total amount of JVM memory (GB): " + String.format("%.4f",Runtime.getRuntime().totalMemory()*0.001f*0.001f*0.001f));
+		
+		UtilClass.DebugOutput("Set to run this many concurrent threads: " + taskMaxThreadCount);
+		UtilClass.DebugOutput("Defined timeout time (seconds): " + taskTimeout*0.001f);
+		
+		long startTime = System.nanoTime();
+		startExecutionTime = System.currentTimeMillis();
+		
+		
+		
+		
+		
+		boolean[] threadSuccess = new boolean[taskInputImageLength];
+		
+		execService = Executors.newFixedThreadPool(taskMaxThreadCount);
+		processThreads = new ImageJ_Thread[taskInputImageLength];
+		
+		for (int i = 0; i < taskInputImageLength; i++) {
+			processThreads[i] = new ImageJ_Thread();
+			processThreads[i].threadIndex = i + 1;
+			processThreads[i].threadTotal = taskInputImageLength;
+			String sysCommand = taskCmd;
+			for (int j = 0; j < 10; j++) {
+				if (j != taskImage && taskInput[j] != null) {
+					String[] taskInputString = task.getTaskInput(j);
+					sysCommand = sysCommand.replace("||" + j + "||", taskInputString[0]);
+				}
+			}
+			if(singleThread == false) {
+				String[] taskInputString = task.getTaskInput(taskImage);
+				sysCommand = sysCommand.replace("||" + taskImage + "||", taskInputString[i]);
+			}
+			processThreads[i].sysCommand = sysCommand;
+			processThreads[i].milisecondsTimeout = taskTimeout;
+		}
+		
+		if (cancelRequest == 1) {
+			modifyCancelRequest(taskNumber);
+			return -2;
+		}
+		
+		for (int i = 0; i < taskInputImageLength; i++) {
+			execService.execute(processThreads[i]);
+		}
+		
+		UtilClass.DebugOutput("Waiting for threads to finish...");
+		UtilClass.DebugOutput("");
+		execService.shutdown();
+		try {
+			if(singleThread) {
+				execService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+			}
+			if (cancelRequest == 1) {
+				modifyCancelRequest(taskNumber);
+				cancelProcessThreads(taskInputImageLength);
+				return -2;
+			}
+			execService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		execService.shutdownNow();
+		double avgSeconds = 0;
+		int avgSuccessThreads = 0;
+		double maxSeconds = 0;
+		for (int i = 0; i < taskInputImageLength; i++) {
+			threadSuccess[i] = !processThreads[i].forcedClosed;
+			// (compare time in seconds)
+			if (processThreads[i].timeFinished < (taskTimeout*0.001f) - 1) {
+				avgSeconds += processThreads[i].timeFinished;
+				avgSuccessThreads++;
+				
+				if (processThreads[i].timeFinished > maxSeconds) {
+					maxSeconds = processThreads[i].timeFinished;
+				}
+			}
+		}
+		if (avgSuccessThreads > 0) {
+			avgSeconds = avgSeconds / avgSuccessThreads;
+		} else {
+			avgSeconds = -1;
+		}
+		
+		UtilClass.DebugOutput("");
+		UtilClass.DebugOutput("All threads finished.");
+		double totalSeconds = (System.nanoTime() - startTime)*0.000000001f;
+		UtilClass.DebugOutput("Total execution time (seconds): " + String.format("%.0f",totalSeconds) + "   |   (minutes): " + String.format("%.2f",(totalSeconds/60f)));
+		UtilClass.DebugOutput("Average execution time for successful threads (seconds): " + String.format("%.0f", avgSeconds));
+		UtilClass.DebugOutput("Max execution time for successful threads (seconds): " + String.format("%.0f", maxSeconds));
+		UtilClass.DebugOutputNoLine("\n");
+		int failedRuns = 0;
+		
+		failedRuns = debugSuccessFailOutput(failedRuns, taskInputImageLength, threadSuccess);
+				
+		UtilClass.DebugOutput("\n");
+		
+		while (taskRetryFail > 0 && failedRuns > 0) {
+			UtilClass.DebugOutput("Retry allowed for failed threads. Retries left: " + taskRetryFail);
+			taskRetryFail--;
+			failedRuns = 0;
+			
+			if (cancelRequest == 1) {
+				modifyCancelRequest(taskNumber);
+				return -2;
+			}
+			
+			execService = Executors.newFixedThreadPool(taskMaxThreadCount);
+			
+			for (int i = 0; i < taskInputImageLength; i++) {
+				if (processThreads[i].forcedClosed == true) {
+					execService.execute(processThreads[i]);
+				}
+			}
+			
+			UtilClass.DebugOutput("Waiting for threads to finish...");
+			UtilClass.DebugOutput("");
+			execService.shutdown();
+			try {
+				execService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+				if (cancelRequest == 1) {
+					modifyCancelRequest(taskNumber);
+					cancelProcessThreads(taskInputImageLength);
+					return -2;
+				}
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			execService.shutdownNow();
+			
+			for (int i = 0; i < taskInputImageLength; i++) {
+				threadSuccess[i] = !processThreads[i].forcedClosed;
+			}
+			
+			UtilClass.DebugOutput("");
+			UtilClass.DebugOutput("All threads finished.");
+			totalSeconds = (System.nanoTime() - startTime)*0.000000001f;
+			UtilClass.DebugOutput("Total execution time (seconds): " + String.format("%.0f",totalSeconds) + "   |   (minutes): " + String.format("%.2f",(totalSeconds/60f)));
+			UtilClass.DebugOutputNoLine("\n");
+			
+			failedRuns = debugSuccessFailOutput(failedRuns, taskInputImageLength, threadSuccess);
+			
+			UtilClass.DebugOutput("\n");
+		}
+		
+		UtilClass.DebugOutput("Finished Task " + taskNumber + ".");
+		UtilClass.DebugOutput("---\n\n");
+		
+		if (failedRuns > 0)
+			return -1;
+		else
+			return 1;
+
+	}
+	
+	public void modifyCancelRequest(String taskNumber) {
+		UtilClass.DebugOutput("CANCEL requested during Task " + taskNumber + ", canceling further executions.");
+		cancelRequest = 0;
+	}
+	
+	public void cancelProcessThreads(int taskInputImageLength) {
+		for (int i = 0; i < taskInputImageLength; i++) {
+			processThreads[i].Cancel();
+		}
+	}
+	
+	public int debugSuccessFailOutput(int failedRuns, int taskInputImageLength, boolean[] threadSuccess) {
+		for (int i = 0; i < taskInputImageLength; i++)
+		{
+			UtilClass.DebugOutputNoLine("Thread " + (i+1) + " : ");
+			if (threadSuccess[i] == true) {
+				UtilClass.DebugOutputNoLine("SUCCESS");
+			} else {
+				UtilClass.DebugOutputNoLine("FAIL");
+				failedRuns++;
+			}
+			UtilClass.DebugOutputNoLine(", \t");
+			if (i % 3 == 2) {
+				UtilClass.DebugOutputNoLine("\n");
+			}
+		}
+		return failedRuns;
+	}
+	
+	public void executeTask(Task task) {
+		UtilClass.DebugOutput("Inside execute task");
+		if (task.getTaskImages().length()>0 && task.getTaskImagesDir().length()>0) {
+			int taskimagesNum = Integer.parseInt(task.getTaskImages().replace("|", ""));
+			int taskimagesDirNum = Integer.parseInt(task.getTaskImagesDir().replace("|", ""));
+			UtilClass.DebugOutput("taskimagesNum:" + taskimagesNum);
+			if (taskimagesNum == -1 && taskimagesDirNum == -1) {
+				UtilClass.DebugOutput("no image input");
+				// assume no image input, just run as 1 job with literal command.
+			}
+			else if ((task.taskinput[taskimagesNum] == null || task.taskinput[taskimagesNum].length == 0) && (task.taskinput[taskimagesDirNum] != null)) {
+				// get input images list, used to determine how many jobs need to be done (assume 1 image per job) 
+				String[] taskInputArray = task.getTaskInput(taskimagesDirNum);
+				File fileDirectory = new File (taskInputArray[0]);
+				if (fileDirectory.isDirectory() == true) {
+					File[] f = fileDirectory.listFiles(new FilenameFilter() {
+						@Override
+						public boolean accept(File dir, String name) {
+							boolean returnValue = false;
+							if (name.toLowerCase().endsWith(".jpg")
+									|| name.toLowerCase().endsWith(".jpeg")
+									|| name.toLowerCase().endsWith(".png")
+									|| name.toLowerCase().endsWith(".gif")
+									|| name.toLowerCase().endsWith(".tif")
+									|| name.toLowerCase().endsWith(".tiff")) {
+								returnValue = true;
+							}
+							return returnValue;
+						}
+					});
+					String[] newTaskStringArray = new String[f.length];
+					task.setTaskinput(taskimagesNum, newTaskStringArray);
+					for (int i = 0; i < f.length; i++) {
+						task.setTaskinput(taskimagesNum, i, f[i].getName());
+					}
+				}	
+			}
+		}
+		if (mainApp.getPrintParam() == true) {
+			String taskString = "task" + task.taskNumber;
+			UtilClass.DebugOutput("****These are the recognized input parameters (if not specified by the user, these are the defaults).****");
+			UtilClass.DebugOutput("gui = " + mainApp.getGui());
+			UtilClass.DebugOutput("functionMode = " + mainApp.getFunctionMode());
+			UtilClass.DebugOutput(taskString + "maxThreads = " + task.maxThreads);
+			UtilClass.DebugOutput(taskString + "timeout = " + task.tasktimeout);
+			UtilClass.DebugOutput(taskString + "retryFails = " + task.taskretryFails);
+			UtilClass.DebugOutput(taskString + "cmd = " + task.taskcmd);
+			UtilClass.DebugOutput(taskString + "imagesDir = " + task.taskimagesDir);
+			UtilClass.DebugOutput(taskString + "images = " + task.taskimages);
+			for (int a = 0; a < task.taskinput.length; a++) {
+				if (task.taskinput[a] != null) {
+					UtilClass.DebugOutput(taskString + "input0" + a + " = ");
+					for (int b = 0; b < task.taskinput[a].length; b++) {
+						UtilClass.DebugOutput(task.taskinput[a][b]);
+						if (b < task.taskinput[a].length - 1) {
+							UtilClass.DebugOutput(", ");
+						}
+					}
+					UtilClass.DebugOutput("\n");
+				}
+			}
+			UtilClass.DebugOutput("****End of input parameters.****\n\n");
+		}
+		int taskImages = Integer.parseInt(task.getTaskImages().replace("|", ""));			//indicating variable 1 - 9, should be a number
+		int imagesDir = Integer.parseInt(task.getTaskImagesDir().replace("|", ""));
+		//thisManager.ImageJ_StartJobs();
+		if (taskImages == -1 && imagesDir == -1) {
+			UtilClass.DebugOutput("Running generic task with true");
+			RunGenericTask(task.taskNumber, true);
+		} else {
+			UtilClass.DebugOutput("Running generic task with false");
+			RunGenericTask(task.taskNumber, false);
+		}
+	}
+	
+public int CombineCSV_Start() {
+		
+		UtilClass.DebugOutput("TASK 3:");
+		
+		String currentDateText = "";
+		Calendar calendar = Calendar.getInstance();
+		calendar.get(Calendar.YEAR);
+		currentDateText = "" + calendar.get(Calendar.YEAR) + "" 
+				+ String.format("%02d", calendar.get(Calendar.MONTH)+1) + "" 
+				+ String.format("%02d", calendar.get(Calendar.DAY_OF_MONTH)) + "_"
+				+ String.format("%02d", calendar.get(Calendar.HOUR_OF_DAY)) + "" 
+				+ String.format("%02d", calendar.get(Calendar.MINUTE)) + ""
+				+ String.format("%02d", calendar.get(Calendar.SECOND)); 
+		
+		UtilClass.DebugOutput("Now combining .csv files into one large file called 'summary_" + currentDateText + ".csv'...");
+		
+		String[] csvFiles = null;
+		Task task2 = findTask("02", mainApp.getTaskData());
+		String[] taskInputArray = task2.getTaskInput(Integer.parseInt(task2.getTaskImagesDir()));
+		if (taskInputArray[0] != null) {
+			File fileDirectory = new File (taskInputArray[0]);
+			if (fileDirectory.isDirectory() == true) {
+				File[] f = fileDirectory.listFiles(new FileFilter() {
+					@Override
+					public boolean accept(File f) {
+						boolean returnValue = false;
+						if (f.getName().toLowerCase().endsWith(".csv") && f.lastModified() > startExecutionTime) {
+							returnValue = true;
+						}
+						return returnValue;
+					}
+				});
+				csvFiles = new String[f.length];
+				for (int i = 0; i < f.length; i++) {
+					//f[i].lastModified();
+					csvFiles[i] = f[i].getName();
+				}
+			}
+		}
+		
+		UtilClass.DebugOutput("This many .csv files found: " + csvFiles.length);
+		
+		String outputCsv = "";
+		for (int i = 0; i < csvFiles.length; i++) {
+			File inputFile = new File(taskInputArray[0] + csvFiles[i]);
+			Scanner readFile;
+			try {
+				readFile = new Scanner(inputFile);
+				String fileLine = readFile.nextLine();
+				if (outputCsv.length() <= 1) {
+					outputCsv += fileLine + ",," + fileLine + ",," + fileLine + "\n";
+				}
+				while (readFile.hasNextLine()) {
+					fileLine = readFile.nextLine();
+					outputCsv += fileLine;
+					if (readFile.hasNextLine()) {
+						outputCsv += ",,";
+					}
+					//System.out.println(argsLine);					
+				}
+				outputCsv += "\n";
+				readFile.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+				return -1;
+			}
+			
+		}
+		try {
+			FileWriter writeCsvFile = new FileWriter(taskInputArray[0] + "summary_"+currentDateText+".csv");
+			writeCsvFile.write(outputCsv);
+			writeCsvFile.close();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return -1;
+		}
+		
+		
+		UtilClass.DebugOutput(".csv file task done.");
+		UtilClass.DebugOutput("---\n\n");
+		
+		return 1;
 	}
 }

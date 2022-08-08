@@ -6,6 +6,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 
+import javafx.beans.property.StringProperty;
+
 public class UtilClass {
 
 	
@@ -21,6 +23,11 @@ public class UtilClass {
 		if (gui == true && jtextarea_debug != null) {
 			jtextarea_debug.setText(jtextarea_debug.getText() + "\n" + message);
 		}
+	}
+	
+	public static void DebugOutput(StringProperty message) {
+		String m = message.get();
+		DebugOutput(m);
 	}
 	
 	public static void DebugOutputNoLine(String message) {

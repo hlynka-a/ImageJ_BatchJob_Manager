@@ -35,8 +35,16 @@ public class MainApp extends Application {
 		this.printParam = p;
 	}
 	
+	public boolean getPrintParam() {
+		return this.printParam;
+	}
+	
 	public void setGui(boolean g) {
 		this.gui = g;
+	}
+	
+	public boolean getGui() {
+		return this.gui;
 	}
 	
 	public void setFunctionMode(String functionMode) {

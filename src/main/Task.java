@@ -98,10 +98,23 @@ public class Task{
 		return taskinput;
 	}
 
-	public void setTaskinput(StringProperty[][] taskinput) {
-		this.taskinput = taskinput;
+	public void setTaskinput(String[][] taskinput) {
+		
+		//this.taskinput = taskinput;
 	}
-
+	
+	public void setTaskinput(int indexA, int indexB, String setInput) {
+		this.taskinput[indexA][indexB] = new SimpleStringProperty(setInput);
+	}
+	
+	public void setTaskinput(int index, String[] stringArray) {
+		StringProperty[] newStringPropertyArray = new StringProperty[stringArray.length];
+		for(int i=0; i < stringArray.length; i++) {
+			newStringPropertyArray[i] = new SimpleStringProperty(stringArray[i]);
+		}
+		this.taskinput[index] = newStringPropertyArray;
+	}
+	
 	public void setTaskinputProperty(StringProperty[][] taskinput) {
 		this.taskinput = taskinput;
 	}
