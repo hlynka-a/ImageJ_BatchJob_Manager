@@ -17,10 +17,13 @@ import java.util.concurrent.TimeUnit;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 
@@ -98,6 +101,12 @@ public class TaskOverviewController {
 	private CheckBox task2checkbox;
 	@FXML
 	private CheckBox task3checkbox;
+	
+	@FXML
+	private Label statusLabel;
+	
+	@FXML
+	private TextArea debugWindow;
 	
 	
 	private MainApp mainApp;
@@ -321,12 +330,78 @@ public class TaskOverviewController {
 			task2.setTaskimagesDir(newValue);
 		});
 		
-		task1checkbox.setSelected(true);
+		task1checkbox.setSelected(false);
 		task2checkbox.setSelected(true);
+		task3checkbox.setSelected(true);
+		
+		task1checkbox.setOnAction(value -> {
+			String currentFunctionMode = mainApp.getFunctionMode();
+			if(task1checkbox.isSelected()) {
+				if(!currentFunctionMode.contains("1")) {
+					mainApp.setFunctionMode(currentFunctionMode + "1");
+				}
+			}
+			else {
+				if(currentFunctionMode.contains("1")) {
+					mainApp.setFunctionMode(currentFunctionMode.replace("1", ""));
+				}
+			}
+			System.out.println("function mode is now: " + mainApp.getFunctionMode());
+		});
+		
+		task2checkbox.setOnAction(value -> {
+			String currentFunctionMode = mainApp.getFunctionMode();
+			if(task2checkbox.isSelected()) {
+				if(!currentFunctionMode.contains("2")) {
+					mainApp.setFunctionMode(currentFunctionMode + "2");
+				}
+			}
+			else {
+				if(currentFunctionMode.contains("2")) {
+					mainApp.setFunctionMode(currentFunctionMode.replace("2", ""));
+				}
+			}
+			System.out.println("function mode is now: " + mainApp.getFunctionMode());
+		});
+		
+		task3checkbox.setOnAction(value -> {
+			String currentFunctionMode = mainApp.getFunctionMode();
+			if(task3checkbox.isSelected()) {
+				if(!currentFunctionMode.contains("3")) {
+					mainApp.setFunctionMode(currentFunctionMode + "3");
+				}
+			}
+			else {
+				if(currentFunctionMode.contains("3")) {
+					mainApp.setFunctionMode(currentFunctionMode.replace("3", ""));
+				}
+			}
+			System.out.println("function mode is now: " + mainApp.getFunctionMode());
+		});
+		
+		executeButton.setOnAction(value ->  {
+	           statusLabel.setText("RUNNING...");
+	           handleExecute();
+	        });
+		
+		cancelButton.setOnAction(value ->  {
+	           statusLabel.setText("CANCELING...");
+	           handleCancel();
+	        });
+		
+		debugWindow.textProperty().addListener(new ChangeListener<Object>() {
+		    @Override
+		    public void changed(ObservableValue<?> observable, Object oldValue,
+		            Object newValue) {
+		        debugWindow.setScrollTop(Double.MAX_VALUE); //this will scroll to the bottom
+		        //use Double.MIN_VALUE to scroll to the top
+		    }
+		});
 	}
 	
 	@FXML
 	private void handleExecute() {
+		
 		if (mainApp.getFunctionMode().contains("1") == true) {
 			Task task01 = this.findTask("01", mainApp.getTaskData());
 			executeTask(task01);
@@ -619,16 +694,22 @@ public class TaskOverviewController {
 			taskInputImageLength = taskInput[taskImage].length;
 		}
 		
-		UtilClass.DebugOutput("TASK " + taskNumber + ":");
-		
-		UtilClass.DebugOutput(taskDescription);
-		
 		UtilClass.DebugOutput("System OS: " + System.getProperty("os.name"));
 		UtilClass.DebugOutput("Total number of system cores: " + Runtime.getRuntime().availableProcessors());
 		UtilClass.DebugOutput("Total amount of JVM memory (GB): " + String.format("%.4f",Runtime.getRuntime().totalMemory()*0.001f*0.001f*0.001f));
 		
 		UtilClass.DebugOutput("Set to run this many concurrent threads: " + taskMaxThreadCount);
 		UtilClass.DebugOutput("Defined timeout time (seconds): " + taskTimeout*0.001f);
+		
+		if(mainApp.getGui() == true) {
+			debugWindow.setText(debugWindow.getText() + "System OS: " + System.getProperty("os.name") + "\n");
+			debugWindow.setText(debugWindow.getText() + "Total number of system cores: " + Runtime.getRuntime().availableProcessors() + "\n");
+			debugWindow.setText(debugWindow.getText() + "Total amount of JVM memory (GB): " + String.format("%.4f",Runtime.getRuntime().totalMemory()*0.001f*0.001f*0.001f) + "\n");
+			
+			debugWindow.setText(debugWindow.getText() + "Set to run this many concurrent threads: " + taskMaxThreadCount + "\n");
+			debugWindow.setText(debugWindow.getText() + "Defined timeout time (seconds): " + taskTimeout*0.001f + "\n");
+			debugWindow.appendText("");
+		}
 		
 		long startTime = System.nanoTime();
 		startExecutionTime = System.currentTimeMillis();

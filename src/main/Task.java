@@ -97,6 +97,11 @@ public class Task{
 	public StringProperty[][] getTaskinput() {
 		return taskinput;
 	}
+	
+	public String getTaskInput(int indexA, int indexB) {
+		String[] newArray = getTaskInput(indexA);
+		return newArray[indexB];
+	}
 
 	public void setTaskinput(String[][] taskinput) {
 		
